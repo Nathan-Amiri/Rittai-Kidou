@@ -62,10 +62,13 @@ public class Player : MonoBehaviour
             int layerMask = 1 << 7;
             if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, 3000, layerMask))
             {
+                leftLineRenderer.enabled = true;
                 leftLineRenderer.SetPosition(0, transform.position + new Vector3(0, -1, 0));
                 leftLineRenderer.SetPosition(1, hit.point);
             }
         }
+        else
+            leftLineRenderer.enabled = false;
     }
 
     private void ReelTether()
