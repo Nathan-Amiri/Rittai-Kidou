@@ -4,19 +4,34 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    //assigned in inspector:
     public Rigidbody rb;
+    public Transform anchors;
+
+    public LineRenderer leftLineRenderer;
+    public LineRenderer rightLineRenderer;
+
+    public Transform leftAnchor;
+    public Transform rightAnchor;
+
+    public ConfigurableJoint leftJoint;
+    public ConfigurableJoint rightJoint;
 
     //rotate player with mouse:
     private readonly float rotateSpeed = 8;
 
-    //lineRenderer.SetPosition(0, transform.position + new Vector3(0, -1, 0));
-    //lineRenderer.SetPosition(1, transform.position + new Vector3(0, -1, 0) + (transform.forward * 50));
+    private void Start()
+    {
+        anchors.SetParent(null);
+        anchors.position = Vector3.zero;
+        anchors.localScale = Vector3.one;
+    }
 
     private void Update()
     {
         RotateWithMouse();
 
-        ShootTether();
+        LaunchTether();
 
         ReelTether();
 
@@ -34,24 +49,23 @@ public class Player : MonoBehaviour
     {
         float yaw = rotateSpeed * Input.GetAxis("Mouse X");
         float pitch = rotateSpeed * Input.GetAxis("Mouse Y");
-
-        //to avoid changing rotation.z, rotate yaw in world and pitch in self
+        //to avoid changing rotation.z, rotate yaw in worldspace and pitch in localspace
         transform.Rotate(0, yaw, 0, Space.World);
         transform.Rotate(-pitch, 0, 0, Space.Self);
-
-        //a backup solution, in which z is manually set to 0 (in case
-        //above method causes errors later in the project) This method
-        //will have an identical result
-        //Vector3 eulers = transform.localEulerAngles;
-        //eulers.x += -pitch;
-        //eulers.y += yaw;
-        //eulers.z = 0;
-        //transform.localEulerAngles = eulers;
     }
 
-    private void ShootTether()
+    private void LaunchTether()
     {
 
+        if (Input.GetButton("LeftTether"))
+        {
+            int layerMask = 1 << 7;
+            if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, 3000, layerMask))
+            {
+                leftLineRenderer.SetPosition(0, transform.position + new Vector3(0, -1, 0));
+                leftLineRenderer.SetPosition(1, hit.point);
+            }
+        }
     }
 
     private void ReelTether()
