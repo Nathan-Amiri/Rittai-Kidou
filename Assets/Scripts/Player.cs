@@ -1,9 +1,31 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    //to do:
+    //Crosshairs
+    //tether swing
+    //reel
+    //gas
+    //gas meter
+    //missile
+    //turret
+    //health meter
+    //play again
+
+    //multiplayer/menu!!!!
+    //entity spawning
+    //speed boost
+    //other entity?
+    //player/turret/missile art
+    //sound effects
+    //gas/missile trail
+
+
+
     //assigned in inspector:
     public Rigidbody rb;
     public Transform anchors;
@@ -20,11 +42,17 @@ public class Player : MonoBehaviour
     //rotate player with mouse:
     private readonly float rotateSpeed = 8;
 
+    //fires raycast through crosshairs
+    private readonly float raycastOffset = .23f;
+
     private void Start()
     {
         anchors.SetParent(null);
         anchors.position = Vector3.zero;
         anchors.localScale = Vector3.one;
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     private void Update()
@@ -42,7 +70,7 @@ public class Player : MonoBehaviour
         Peek();
 
         if (Input.GetButton("Fire"))
-            rb.velocity = 50 * transform.forward;
+            rb.velocity = 100 * transform.forward;
     }
 
     private void RotateWithMouse()
@@ -56,19 +84,45 @@ public class Player : MonoBehaviour
 
     private void LaunchTether()
     {
+        //get offset angles
 
-        if (Input.GetButton("LeftTether"))
+        //used for raycast
+        Vector3 hitOffset = raycastOffset * transform.right;
+        //used only for linerenderers
+        Vector3 startOffset = (transform.right * -1) + (transform.up * -1);
+
+        if (Input.GetButtonDown("LeftTether"))
         {
             int layerMask = 1 << 7;
-            if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, 3000, layerMask))
+            if (Physics.Raycast(transform.position, transform.forward - hitOffset, out RaycastHit hit, 3000, layerMask))
             {
                 leftLineRenderer.enabled = true;
-                leftLineRenderer.SetPosition(0, transform.position + new Vector3(0, -1, 0));
                 leftLineRenderer.SetPosition(1, hit.point);
             }
         }
-        else
+        else if (Input.GetButtonUp("LeftTether"))
             leftLineRenderer.enabled = false;
+
+        if (leftLineRenderer.enabled)
+            leftLineRenderer.SetPosition(0, transform.position + startOffset);
+
+        startOffset = (transform.right * 1) + (transform.up * -1);
+
+        if (Input.GetButtonDown("RightTether"))
+        {
+            int layerMask = 1 << 7;
+            if (Physics.Raycast(transform.position, transform.forward + hitOffset, out RaycastHit hit, 3000, layerMask))
+            {
+                rightLineRenderer.enabled = true;
+                rightLineRenderer.SetPosition(0, transform.position + startOffset);
+                rightLineRenderer.SetPosition(1, hit.point);
+            }
+        }
+        else if (Input.GetButtonUp("RightTether"))
+            rightLineRenderer.enabled = false;
+
+        if (rightLineRenderer.enabled)
+            rightLineRenderer.SetPosition(0, transform.position + startOffset);
     }
 
     private void ReelTether()
