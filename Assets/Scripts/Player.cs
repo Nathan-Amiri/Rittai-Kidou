@@ -1,22 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
     //to do:
-    //gas meter
     //missile
     //turret
-    //health meter
-    //play again
+    //health indicators
+    //play again (show inputs on playagain screen)
 
     //multiplayer/menu!!!!
     //entity spawning
     //speed boost
-    //other entity?
+    //heal
+    //arena larger
     //player/turret/missile art
     //sound effects
     //gas/missile trail
@@ -36,8 +36,14 @@ public class Player : MonoBehaviour
     public GameObject leftAnchor;
     public GameObject rightAnchor;
 
+    public Transform gasScaler;
+    public Image gasImage;
+
+
+    //assigned dynamically:
     private SpringJoint leftJoint;
     private SpringJoint rightJoint;
+
 
     //custom gravity
     private readonly float gravityScale = 3;
@@ -63,6 +69,11 @@ public class Player : MonoBehaviour
 
     //gas
     private readonly float gasBoost = 2;
+    private float gasAmount = 30; //max 30
+    private readonly float gasRefillSpeed = 8;
+    private readonly float gasDrainSpeed = 4;
+    //true when gas tap is successful:
+    private bool gasHoldAvailable;
 
     private void Start()
     {
@@ -160,13 +171,13 @@ public class Player : MonoBehaviour
 
             float distance = Vector3.Distance(transform.position, anchor.transform.position);
 
-            SpringJoint joint = posOrNeg == -1 ? leftJoint : rightJoint;
+            SpringJoint joint = isLeft ? leftJoint : rightJoint;
             joint.minDistance = 0;
             //if not reeling
             if ((isLeft && !leftReeling) || (!isLeft && !rightReeling))
             {
-                joint.maxDistance = distance;
                 joint.spring = 4.5f;
+                joint.maxDistance = distance;
             }
         }
     }
@@ -176,7 +187,6 @@ public class Player : MonoBehaviour
         SpringJoint joint = jointObject.AddComponent<SpringJoint>();
         joint.autoConfigureConnectedAnchor = false;
         joint.connectedAnchor = Vector3.zero;
-        joint.spring = 4.5f;
         joint.damper = 7;
         joint.massScale = 4.5f;
         joint.connectedBody = rb;
@@ -185,7 +195,7 @@ public class Player : MonoBehaviour
 
     private void ReelTether() //run in update
     {
-        leftReeling = Input.GetButton("LeftReel") && leftJoint != null;
+        leftReeling = Input.GetButton("LeftReel") & leftJoint != null;
         rightReeling = Input.GetButton("RightReel") & rightJoint != null;
 
         float newReelAmount = leftReeling && rightReeling ? doubleReelAmount : reelAmount;
@@ -193,26 +203,52 @@ public class Player : MonoBehaviour
         if (leftReeling)
         {
             float distance = Vector3.Distance(transform.position, leftAnchor.transform.position);
-            leftJoint.maxDistance = distance - 10;
             leftJoint.spring = newReelAmount;
+            leftJoint.maxDistance = distance - 10;
         }
         if (rightReeling)
         {
             float distance = Vector3.Distance(transform.position, rightAnchor.transform.position);
-            rightJoint.maxDistance = distance - 10;
             rightJoint.spring = newReelAmount;
+            rightJoint.maxDistance = distance - 10;
         }
     }
 
     private void Gas() //run in update
     {
-        if (Input.GetButtonDown("Gas"))
-            StartCoroutine(GasDelay());
+        //update meter
+        gasScaler.localScale = new Vector2(gasScaler.localScale.x, gasAmount / 30);
+        gasImage.color = gasAmount > 10 ? Color.white : Color.red;
 
-        if (Input.GetButton("Gas")) //adjust this so that it only works if gas remains!
-            drag = 0;
-        else
-            drag = .5f;
+        //gas tap
+        if (Input.GetButtonDown("Gas") && gasAmount > 10)
+        {
+            gasAmount -= 10;
+            gasHoldAvailable = true;
+            StartCoroutine(GasDelay());
+        }
+
+        if (Input.GetButton("Gas") && gasHoldAvailable)
+        {
+            //gas hold
+            if (gasAmount > 0)
+            {
+                drag = 0;
+                gasAmount -= gasDrainSpeed * Time.deltaTime;
+            }
+            else //gas freeze
+                drag = .5f;
+
+            return;
+        }
+
+        //gas refill
+        gasHoldAvailable = false;
+        drag = .5f;
+        if (gasAmount > 30)
+            gasAmount = 30;
+        else if (gasAmount < 30)
+            gasAmount += gasRefillSpeed * Time.deltaTime;
     }
     private IEnumerator GasDelay()
     {
