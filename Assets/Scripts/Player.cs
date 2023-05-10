@@ -25,6 +25,7 @@ public class Player : MonoBehaviour
 
     //assigned in inspector:
     public Rigidbody rb;
+
     public Transform anchors;
 
     public TMP_Text leftCrosshair;
@@ -37,7 +38,12 @@ public class Player : MonoBehaviour
     public GameObject rightAnchor;
 
     public Transform gasScaler;
-    public Image gasImage;
+    public Image gasAmountImage;
+
+    public Transform missileScaler;
+    public Image missileAmountImage;
+
+    public ObjectPool objectPool;
 
 
     //assigned dynamically:
@@ -74,6 +80,11 @@ public class Player : MonoBehaviour
     private readonly float gasDrainSpeed = 4;
     //true when gas tap is successful:
     private bool gasHoldAvailable;
+
+    //missile
+    private float missileAmount = 30; //max 30
+    private readonly float missileRefillSpeed = 8;
+    private readonly float missileSpeed = 200;
 
     private void Start()
     {
@@ -218,7 +229,7 @@ public class Player : MonoBehaviour
     {
         //update meter
         gasScaler.localScale = new Vector2(gasScaler.localScale.x, gasAmount / 30);
-        gasImage.color = gasAmount > 10 ? Color.white : Color.red;
+        gasAmountImage.color = gasAmount > 10 ? Color.white : Color.red;
 
         //gas tap
         if (Input.GetButtonDown("Gas") && gasAmount > 10)
@@ -258,7 +269,24 @@ public class Player : MonoBehaviour
 
     private void FireMissile() //run in update
     {
+        //update meter
+        missileScaler.localScale = new Vector2(missileScaler.localScale.x, missileAmount / 30);
+        missileAmountImage.color = missileAmount > 10 ? Color.blue : Color.gray;
 
+        //refill meter
+        if (missileAmount > 30)
+            missileAmount = 30;
+        else if (missileAmount < 30)
+            missileAmount += missileRefillSpeed * Time.deltaTime;
+
+        if (Input.GetButtonDown("Fire") && missileAmount > 10)
+        {
+            missileAmount -= 10;
+            Missile missile = objectPool.GetPooledInfo().missile;
+            missile.transform.SetPositionAndRotation(transform.position, transform.rotation);
+            missile.gameObject.SetActive(true);
+            missile.rb.velocity = missileSpeed * missile.transform.forward;
+        }
     }
 
     private void Peek() //run in update
