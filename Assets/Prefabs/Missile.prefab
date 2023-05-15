@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5774222912373092821}
   - component: {fileID: 5774222912373092818}
   - component: {fileID: 2193706149188084641}
-  - component: {fileID: 5628955842022179038}
+  - component: {fileID: 842717901}
   m_Layer: 0
   m_Name: Missile
   m_TagString: Untagged
@@ -130,7 +130,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rb: {fileID: 5774222912373092818}
---- !u!95 &5628955842022179038
+  anim: {fileID: 842717901}
+  sphereCollider: {fileID: 5774222912373092821}
+--- !u!95 &842717901
 Animator:
   serializedVersion: 5
   m_ObjectHideFlags: 0
@@ -140,7 +142,7 @@ Animator:
   m_GameObject: {fileID: 5774222912373092824}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 2a05f335131756c48837d2e204f8254b, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -162,7 +164,6 @@ GameObject:
   - component: {fileID: 1582452109206745100}
   - component: {fileID: 8243258492899039581}
   - component: {fileID: 1065527415621605327}
-  - component: {fileID: 6906062213016029864}
   m_Layer: 0
   m_Name: Explosion
   m_TagString: Untagged
@@ -179,7 +180,7 @@ Transform:
   m_GameObject: {fileID: 7401378949764305758}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 50, y: 50, z: 25}
+  m_LocalScale: {x: 20, y: 20, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5774222912373092820}
@@ -200,7 +201,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7401378949764305758}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -235,16 +236,3 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!135 &6906062213016029864
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7401378949764305758}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}

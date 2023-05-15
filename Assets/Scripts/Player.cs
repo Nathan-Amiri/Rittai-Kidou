@@ -7,7 +7,6 @@ using UnityEngine.UI;
 public class Player : MonoBehaviour
 {
     //to do:
-    //missile
     //turret
     //health indicators
     //play again (show inputs on playagain screen)
@@ -84,7 +83,6 @@ public class Player : MonoBehaviour
     //missile
     private float missileAmount = 30; //max 30
     private readonly float missileRefillSpeed = 8;
-    private readonly float missileSpeed = 200;
 
     private void Start()
     {
@@ -282,10 +280,7 @@ public class Player : MonoBehaviour
         if (Input.GetButtonDown("Fire") && missileAmount > 10)
         {
             missileAmount -= 10;
-            Missile missile = objectPool.GetPooledInfo().missile;
-            missile.transform.SetPositionAndRotation(transform.position, transform.rotation);
-            missile.gameObject.SetActive(true);
-            missile.rb.velocity = missileSpeed * missile.transform.forward;
+            objectPool.GetPooledInfo().missile.Launch(transform, "Turret");
         }
     }
 
@@ -293,5 +288,11 @@ public class Player : MonoBehaviour
     {
         if (Input.GetButtonDown("Peek") && rb.velocity != Vector3.zero)
             transform.rotation = Quaternion.LookRotation(rb.velocity.normalized, Vector3.up);
+    }
+
+
+    public void TakeDamage()
+    {
+
     }
 }

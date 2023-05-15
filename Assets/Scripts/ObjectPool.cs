@@ -37,7 +37,7 @@ public class ObjectPool : MonoBehaviour
     {
         for (int i = 0; i < amountToPool; i++)
         {
-            if (!pooledObjects[i].obj.activeInHierarchy)
+            if (!pooledObjects[i].obj.activeSelf)
                 return pooledObjects[i];
         }
         return default;
