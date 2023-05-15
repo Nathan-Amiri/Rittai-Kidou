@@ -36,9 +36,8 @@ public class Missile : MonoBehaviour
 
     private void OnTriggerEnter(Collider col)
     {
-        if (col.CompareTag("Terrain"))
-            Explode();
-        else if (col.CompareTag(enemyTag))
+        //prioritize enemies over terrain by checking for them first
+        if (col.CompareTag(enemyTag))
         {
             if (enemyTag == "Turret")
                 col.GetComponent<Turret>().Destroy();
@@ -47,6 +46,9 @@ public class Missile : MonoBehaviour
 
             Explode();
         }
+        else if (col.CompareTag("Terrain"))
+            Explode();
+
     }
 
     private void Explode()

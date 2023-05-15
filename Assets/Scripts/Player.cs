@@ -6,11 +6,6 @@ using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
-    //to do:
-    //turret
-    //health indicators
-    //play again (show inputs on playagain screen)
-
     //multiplayer/menu!!!!
     //entity spawning
     //speed boost
@@ -43,12 +38,17 @@ public class Player : MonoBehaviour
     public Image missileAmountImage;
 
     public ObjectPool objectPool;
+    public EscapeMenu escapeMenu;
+
+    public List<GameObject> hearts = new List<GameObject>();
 
 
     //assigned dynamically:
     private SpringJoint leftJoint;
     private SpringJoint rightJoint;
 
+    //cache velocity when pausing
+    private Vector3 pauseVelocity;
 
     //custom gravity
     private readonly float gravityScale = 3;
@@ -84,18 +84,33 @@ public class Player : MonoBehaviour
     private float missileAmount = 30; //max 30
     private readonly float missileRefillSpeed = 8;
 
+    //health
+    private int health = 5;
+
     private void Start()
     {
         anchors.SetParent(null);
         anchors.position = Vector3.zero;
         anchors.localScale = Vector3.one;
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
     }
 
     private void FixedUpdate()
     {
+        //cache velocity and freeze when paused
+        if (EscapeMenu.paused)
+        {
+            if (pauseVelocity == Vector3.zero)
+                pauseVelocity = rb.velocity;
+            rb.velocity = Vector3.zero;
+            return;
+        }
+        //reset after pause
+        if (pauseVelocity != Vector3.zero)
+        {
+            rb.velocity = pauseVelocity;
+            pauseVelocity = Vector3.zero;
+        }
+
         //custom gravity
         Vector3 gravity = -9.81f * gravityScale * Vector3.up;
         rb.AddForce(gravity, ForceMode.Acceleration);
@@ -106,6 +121,8 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
+        if (EscapeMenu.paused) return;
+
         RotateWithMouse();
 
         LaunchTether1();
@@ -293,6 +310,14 @@ public class Player : MonoBehaviour
 
     public void TakeDamage()
     {
+        if (health <= 1)
+        {
+            escapeMenu.GameEnd();
+            return;
+        }
 
+        hearts[0].SetActive(false);
+        hearts.RemoveAt(0);
+        health -= 1;
     }
 }
