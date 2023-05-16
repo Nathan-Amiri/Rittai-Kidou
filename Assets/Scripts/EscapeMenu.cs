@@ -8,7 +8,7 @@ using UnityEngine.UI;
 public class EscapeMenu : MonoBehaviour
 {
     public static bool paused;
-    public static bool practiceMode;
+    public static bool practiceMode = true;
 
     //assigned in inspector
     public GameObject escapeCanvas;

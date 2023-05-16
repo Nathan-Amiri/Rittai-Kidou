@@ -26,6 +26,13 @@ public class ScoreTracker : MonoBehaviour
 
     private void Update()
     {
+        if (EscapeMenu.practiceMode)
+        {
+            currentScoreText.text = "";
+            highScoreText.text = "";
+            return;
+        }
+
         currentScoreText.text = "Score: " + currentScore;
         highScoreText.text = "High Score: " + highScore;
 
