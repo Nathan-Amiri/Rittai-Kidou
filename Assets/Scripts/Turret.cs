@@ -58,8 +58,8 @@ public class Turret : MonoBehaviour
 
         while (canFire)
         {
-            if (EscapeMenu.practiceMode)
-                break;
+            //if (GameManager.peacefulGameMode)
+            //    break;
 
             //place pause check inside loop so that loop continues to run when paused
             if (!EscapeMenu.paused)
@@ -71,7 +71,7 @@ public class Turret : MonoBehaviour
 
     public void Destroy()
     {
-        ScoreTracker.currentScore += 100;
+        //ScoreTracker.currentScore += 100;
 
         canFire = false;
         meshes.SetActive(false);

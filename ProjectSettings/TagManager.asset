@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Terrain
   - Turret
+  - SimpleManager
+  - GameManager
+  - MenuCanvas
   layers:
   - Default
   - TransparentFX

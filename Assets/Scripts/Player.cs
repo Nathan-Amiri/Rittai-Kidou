@@ -51,10 +51,11 @@ public class Player : MonoBehaviour
     private Vector3 pauseVelocity;
 
     //custom gravity
-    private readonly float gravityScale = 3;
+    private readonly float gravityScale = 1.5f;//3;
 
     //custom drag
-    private float drag; //set in Gas()
+    private readonly float defaultDrag = .25f;//.5f;
+    private float drag; //dynamic
 
     //rotate player with mouse
     private readonly float rotateSpeed = 8;
@@ -68,12 +69,12 @@ public class Player : MonoBehaviour
     //reel
     private bool leftReeling;
     private bool rightReeling;
-    private readonly float reelAmount = 100;
+    private readonly float reelAmount = 50;//100;
     //increase when reeling both tethers
-    private readonly float doubleReelAmount = 200;
+    private readonly float doubleReelAmount = 100;//200;
 
     //gas
-    private readonly float gasBoost = 2;
+    private readonly float gasBoost = 1.5f;//2;
     private float gasAmount = 30; //max 30
     private readonly float gasRefillSpeed = 8;
     private readonly float gasDrainSpeed = 4;
@@ -263,14 +264,14 @@ public class Player : MonoBehaviour
                 gasAmount -= gasDrainSpeed * Time.deltaTime;
             }
             else //gas freeze
-                drag = .5f;
+                drag = defaultDrag;
 
             return;
         }
 
         //gas refill
         gasHoldAvailable = false;
-        drag = .5f;
+        drag = defaultDrag;
         if (gasAmount > 30)
             gasAmount = 30;
         else if (gasAmount < 30)
@@ -312,7 +313,7 @@ public class Player : MonoBehaviour
     {
         if (health <= 1)
         {
-            escapeMenu.GameEnd();
+            //escapeMenu.GameEnd();
             return;
         }
 
