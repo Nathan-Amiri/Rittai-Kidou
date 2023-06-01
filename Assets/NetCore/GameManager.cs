@@ -51,9 +51,9 @@ public class GameManager : NetworkBehaviour
         if (playerNumber == 0)
         {
             //if client is connecting and not loading a scene
-            menuScreen = GameObject.FindWithTag("MenuCanvas").GetComponent<MenuScreen>();
+            //menuScreen = GameObject.FindWithTag("MenuCanvas").GetComponent<MenuScreen>();
             //simpleManager = GameObject.FindWithTag("SimpleManager").GetComponent<SimpleManager>();
-
+            Debug.Log(0);
             string username = PlayerPrefs.GetString("Username");
             RpcFirstConnect(InstanceFinder.ClientManager.Connection, username);
         }
@@ -67,6 +67,7 @@ public class GameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void RpcFirstConnect(NetworkConnection playerConnection, string username)
     {
+        Debug.Log(1);
         //if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != connectionScene)
         //    RpcSceneConditionFailed(playerConnection);
 
@@ -100,15 +101,23 @@ public class GameManager : NetworkBehaviour
     [TargetRpc]
     private void RpcAssignPlayerNumber(NetworkConnection conn, int newPlayerNumber)
     {
+        Debug.Log(2);
+        Debug.Log("Player number is: " + newPlayerNumber);
         playerNumber = newPlayerNumber;
         SendConnectOrLoadEvent();
     }
 
     //scene changing:
-
-    [Server]
-    public void SceneChange(string newScene)
+    [ServerRpc (RequireOwnership = false)]
+    public void ClientRequestSceneChange(string newScene, NetworkConnection conn)
     {
+        Debug.Log(4);
+        RequestSceneChange(newScene, conn);
+    }
+    [Server]
+    public void RequestSceneChange(string newScene, NetworkConnection conn)
+    {
+        Debug.Log(5);
         //TurnOnWaitCanvas();
 
         //sceneLoadedPlayers = 0;
@@ -118,11 +127,16 @@ public class GameManager : NetworkBehaviour
         //    if (playerNumbers[i] != 0)
         //        sceneChangingPlayers++;
 
-        string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-        SceneLoadData sceneLoadData = new(newScene);
-        NetworkManager.SceneManager.LoadGlobalScenes(sceneLoadData);
-        SceneUnloadData sceneUnloadData = new(currentScene);
-        NetworkManager.SceneManager.UnloadGlobalScenes(sceneUnloadData);
+        SceneLoadData sceneLoadData = new(newScene)
+        {
+            ReplaceScenes = ReplaceOption.All
+        };
+
+        if (IsHost && conn == ClientManager.Connection)
+            NetworkManager.SceneManager.LoadGlobalScenes(sceneLoadData);
+        else
+            NetworkManager.SceneManager.LoadConnectionScenes(conn, sceneLoadData);
+
         //wait for beacon signal
     }
 

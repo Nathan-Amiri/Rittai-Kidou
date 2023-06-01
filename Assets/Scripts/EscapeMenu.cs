@@ -4,8 +4,9 @@ using UnityEngine;
 using FishNet;
 using UnityEngine.UI;
 using System;
+using FishNet.Object;
 
-public class EscapeMenu : MonoBehaviour
+public class EscapeMenu : NetworkBehaviour
 {
     public static bool paused;
     [NonSerialized] public int sensitivity;

@@ -22,17 +22,20 @@ public class Turret : MonoBehaviour
 
     private void Awake()
     {
+        return;
         playerRB = GameObject.FindWithTag("Player").GetComponent<Rigidbody>();
         objectPool = GameObject.Find("MiscScripts").GetComponent<ObjectPool>();
     }
 
     private void Start()
     {
+        return;
         StartCoroutine(FireMissile());
     }
 
     private void Update()
     {
+        return;
         playerPosition = playerRB.transform.position;
         playerMoveDirection = playerRB.velocity.normalized;
         playerSpeed = playerRB.velocity.magnitude;

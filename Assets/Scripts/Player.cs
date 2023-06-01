@@ -3,42 +3,40 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using FishNet.Object;
+using System;
 
-public class Player : MonoBehaviour
+public class Player : NetworkBehaviour
 {
-    //assigned in inspector:
+    //assigned in prefab:
     public Rigidbody rb;
-
     public Transform anchors;
-
-    public TMP_Text leftCrosshair;
-    public TMP_Text rightCrosshair;
-
     public LineRenderer leftLineRenderer;
     public LineRenderer rightLineRenderer;
-
     public GameObject leftAnchor;
     public GameObject rightAnchor;
 
-    public Transform gasScaler;
-    public Image gasAmountImage;
+    //assigned by Setup:
+    [NonSerialized] public Camera mainCamera;
 
-    public Transform missileScaler;
-    public Image missileAmountImage;
+    [NonSerialized] public TMP_Text leftCrosshair;
+    [NonSerialized] public TMP_Text rightCrosshair;
 
-    public ObjectPool objectPool;
-    public EscapeMenu escapeMenu;
-    public ScoreTracker scoreTracker;
+    [NonSerialized] public Transform gasScaler;
+    [NonSerialized] public Image gasAmountImage;
 
-    public List<GameObject> hearts = new List<GameObject>();
+    [NonSerialized] public Transform missileScaler;
+    [NonSerialized] public Image missileAmountImage;
 
+    [NonSerialized] public ObjectPool objectPool;
+    [NonSerialized] public EscapeMenu escapeMenu;
+    [NonSerialized] public ScoreTracker scoreTracker;
+
+    [NonSerialized] public List<GameObject> hearts = new();
 
     //assigned dynamically:
     private SpringJoint leftJoint;
     private SpringJoint rightJoint;
-
-    //cache velocity when pausing
-    private Vector3 pauseVelocity;
 
     //custom gravity
     private readonly float gravityScale = 1.5f;//3;
@@ -82,29 +80,21 @@ public class Player : MonoBehaviour
     //health
     private int health = 5;
 
-    private void Start()
+    public void OnSpawn() //run by Setup
     {
         anchors.SetParent(null);
         anchors.position = Vector3.zero;
         anchors.localScale = Vector3.one;
+        if (IsOwner)
+        {
+            mainCamera.transform.SetParent(transform);
+            mainCamera.transform.SetPositionAndRotation(transform.position, transform.rotation);
+        }
     }
 
     private void FixedUpdate()
     {
-        //cache velocity and freeze when paused
-        if (EscapeMenu.paused)
-        {
-            if (pauseVelocity == Vector3.zero)
-                pauseVelocity = rb.velocity;
-            rb.velocity = Vector3.zero;
-            return;
-        }
-        //reset after pause
-        if (pauseVelocity != Vector3.zero)
-        {
-            rb.velocity = pauseVelocity;
-            pauseVelocity = Vector3.zero;
-        }
+        if (!IsOwner) return;
 
         //custom gravity
         Vector3 gravity = -9.81f * gravityScale * Vector3.up;
@@ -116,7 +106,7 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        if (EscapeMenu.paused) return;
+        if (!IsOwner) return;
 
         RotateWithMouse();
 
@@ -133,7 +123,7 @@ public class Player : MonoBehaviour
 
     private void RotateWithMouse() //run in update
     {
-        if (peeking) return;
+        if (EscapeMenu.paused || peeking) return;
 
         float rotateSpeed = mediumRotateSpeed + (sensitivityChangeAmount * escapeMenu.sensitivity);
         float yaw = rotateSpeed * Input.GetAxis("Mouse X");
@@ -148,7 +138,6 @@ public class Player : MonoBehaviour
         LaunchTether2(-1, leftCrosshair, "LeftTether", leftLineRenderer, leftAnchor);
         LaunchTether2(1, rightCrosshair, "RightTether", rightLineRenderer, rightAnchor);
     }
-
     private void LaunchTether2(int posOrNeg, TMP_Text crosshair, string tetherInput, LineRenderer tetherRenderer, GameObject anchor)
     {
         bool isLeft = posOrNeg == -1;
@@ -167,7 +156,7 @@ public class Player : MonoBehaviour
         {
             crosshair.color = Input.GetButton(tetherInput) ? Color.black : Color.red;
 
-            if (Input.GetButtonDown(tetherInput))
+            if (Input.GetButtonDown(tetherInput) && !EscapeMenu.paused)
             {
                 anchor.transform.position = hit.point;
                 if (isLeft)
@@ -205,7 +194,6 @@ public class Player : MonoBehaviour
             }
         }
     }
-
     private SpringJoint CreateJoint(GameObject jointObject)
     {
         SpringJoint joint = jointObject.AddComponent<SpringJoint>();
@@ -219,6 +207,8 @@ public class Player : MonoBehaviour
 
     private void ReelTether() //run in update
     {
+        if (EscapeMenu.paused) return;
+
         leftReeling = Input.GetButton("LeftReel") & leftJoint != null;
         rightReeling = Input.GetButton("RightReel") & rightJoint != null;
 
@@ -244,6 +234,17 @@ public class Player : MonoBehaviour
         gasScaler.localScale = new Vector2(gasScaler.localScale.x, gasAmount / 30);
         gasAmountImage.color = gasAmount > 10 ? Color.white : Color.red;
 
+        //gas refill
+        gasHoldAvailable = false;
+        drag = defaultDrag;
+        if (gasAmount > 30)
+            gasAmount = 30;
+        else if (gasAmount < 30)
+            gasAmount += gasRefillSpeed * Time.deltaTime;
+
+        if (EscapeMenu.paused)
+            return;
+
         //gas tap
         if (Input.GetButtonDown("Gas") && gasAmount > 10)
         {
@@ -265,14 +266,6 @@ public class Player : MonoBehaviour
 
             return;
         }
-
-        //gas refill
-        gasHoldAvailable = false;
-        drag = defaultDrag;
-        if (gasAmount > 30)
-            gasAmount = 30;
-        else if (gasAmount < 30)
-            gasAmount += gasRefillSpeed * Time.deltaTime;
     }
     private IEnumerator GasDelay()
     {
@@ -292,7 +285,7 @@ public class Player : MonoBehaviour
         else if (missileAmount < 30)
             missileAmount += missileRefillSpeed * Time.deltaTime;
 
-        if (Input.GetButtonDown("Fire") && missileAmount > 10)
+        if (Input.GetButtonDown("Fire") && missileAmount > 10 && !EscapeMenu.paused)
         {
             missileAmount -= 10;
             objectPool.GetPooledInfo().missile.Launch("Turret", this, transform);
