@@ -4,13 +4,17 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
 
 public class MenuScreen : MonoBehaviour
 {
     //assigned in prefab
+    public TMP_InputField usernameField;
+    public TextMeshProUGUI usernamePlaceHolder;
     public TMP_Text modeText;
-    public TMP_InputField ipAddress;
+    public Button startLobby;
+    public TMP_InputField ipAddressField;
     public TextMeshProUGUI ipPlaceHolder;
     public Button joinLobby;
     public TMP_Dropdown resolutionDropdown;
@@ -30,15 +34,27 @@ public class MenuScreen : MonoBehaviour
         GameManager.OnClientConnectOrLoad -= OnClientConnectOrLoad;
     }
 
+    private void Start()
+    {
+        if (PlayerPrefs.HasKey("Username"))
+            usernameField.text = PlayerPrefs.GetString("Username");
+    }
+
     private void Update()
     {
-        joinLobby.interactable = !ipPlaceHolder.enabled;
+        startLobby.interactable = !usernamePlaceHolder.enabled;
+        joinLobby.interactable = !ipPlaceHolder.enabled && !usernamePlaceHolder.enabled;
     }
 
     private void OnClientConnectOrLoad(GameManager gm)
     {
         GameManager.peacefulGameMode = peacefulGameMode;
         gm.SceneChange("GameScene");
+    }
+
+    public void ChangeUsername()
+    {
+        PlayerPrefs.SetString("Username", usernameField.text);
     }
 
     public void SelectChangeMode()
@@ -54,7 +70,7 @@ public class MenuScreen : MonoBehaviour
 
     public void SelectJoinLobby()
     {
-        tugboat.SetClientAddress(ipAddress.text);
+        tugboat.SetClientAddress(ipAddressField.text);
         InstanceFinder.ClientManager.StartConnection();
     }
 

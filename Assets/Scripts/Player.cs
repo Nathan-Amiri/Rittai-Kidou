@@ -28,6 +28,7 @@ public class Player : MonoBehaviour
 
     public ObjectPool objectPool;
     public EscapeMenu escapeMenu;
+    public ScoreTracker scoreTracker;
 
     public List<GameObject> hearts = new List<GameObject>();
 
@@ -294,7 +295,7 @@ public class Player : MonoBehaviour
         if (Input.GetButtonDown("Fire") && missileAmount > 10)
         {
             missileAmount -= 10;
-            objectPool.GetPooledInfo().missile.Launch(transform, "Turret");
+            objectPool.GetPooledInfo().missile.Launch("Turret", this, transform);
         }
     }
 
@@ -321,5 +322,12 @@ public class Player : MonoBehaviour
         hearts[0].SetActive(false);
         hearts.RemoveAt(0);
         health -= 1;
+    }
+
+    public void EarnPoints(int amount)
+    {
+        //NEEDS TO BE CHANGED LATER! Right now, collision happens everywhere. When it happens on server,
+        //this method will be called on the server, so playerNumber will always be the host!!
+        scoreTracker.ChangeScore(GameManager.playerNumber, amount, false);
     }
 }

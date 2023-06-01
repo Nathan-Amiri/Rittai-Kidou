@@ -12,12 +12,15 @@ public class Missile : MonoBehaviour
     private readonly float missileSpeed = 400;
     private string enemyTag; //"Turret" or "Player"
 
-    public void Launch(Transform launcher, string newEnemyTag) //called by player/turret
+    private Player currentLauncher;
+
+    public void Launch(string newEnemyTag, Player newLauncher, Transform launcherTr) //called by player/turret
     {
         enemyTag = newEnemyTag;
+        currentLauncher = newLauncher;
 
         sphereCollider.enabled = false;
-        transform.SetPositionAndRotation(launcher.position + (launcher.forward * 10), launcher.rotation);
+        transform.SetPositionAndRotation(launcherTr.position + (launcherTr.forward * 10), launcherTr.rotation);
 
         gameObject.SetActive(true);
         rb.velocity = missileSpeed * transform.forward;
@@ -40,9 +43,16 @@ public class Missile : MonoBehaviour
         if (col.CompareTag(enemyTag))
         {
             if (enemyTag == "Turret")
+            {
                 col.GetComponent<Turret>().Destroy();
+                currentLauncher.EarnPoints(30);
+            }
             else if (enemyTag == "Player")
+            {
                 col.GetComponent<Player>().TakeDamage();
+                if (currentLauncher != null)
+                    currentLauncher.EarnPoints(100);
+            }
 
             Explode();
         }

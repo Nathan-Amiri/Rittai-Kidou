@@ -6,6 +6,7 @@ using FishNet.Object;
 using FishNet.Connection;
 using FishNet.Managing.Scened;
 using FishNet.Transporting;
+using FishNet.Object.Synchronizing;
 
 public class GameManager : NetworkBehaviour
 {
@@ -53,8 +54,8 @@ public class GameManager : NetworkBehaviour
             menuScreen = GameObject.FindWithTag("MenuCanvas").GetComponent<MenuScreen>();
             //simpleManager = GameObject.FindWithTag("SimpleManager").GetComponent<SimpleManager>();
 
-
-            RpcFirstConnect(InstanceFinder.ClientManager.Connection);
+            string username = PlayerPrefs.GetString("Username");
+            RpcFirstConnect(InstanceFinder.ClientManager.Connection, username);
         }
         else //if client is loading a scene and not initially connecting
         {
@@ -64,7 +65,7 @@ public class GameManager : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void RpcFirstConnect(NetworkConnection playerConnection)
+    private void RpcFirstConnect(NetworkConnection playerConnection, string username)
     {
         //if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != connectionScene)
         //    RpcSceneConditionFailed(playerConnection);
@@ -75,7 +76,9 @@ public class GameManager : NetworkBehaviour
                 playerNumbers[i] = i + 1;
                 playerIDs[i] = playerConnection.ClientId;
                 RpcAssignPlayerNumber(playerConnection, i + 1);
-                SetConnectedPlayers(playerNumbers);
+
+                connectedPlayers[i] = username;
+
                 return;
             }
         RpcPlayerNumberConditionFailed(playerConnection);
@@ -173,7 +176,9 @@ public class GameManager : NetworkBehaviour
                     playerIDs[i] = 0;
                     playerNumbers[i] = 0;
                     SendRemoteClientDisconnectEvent(i + 1);
-                    SetConnectedPlayers(playerNumbers);
+
+                    connectedPlayers[i] = "";
+
                     return;
                 }
         }
@@ -212,13 +217,6 @@ public class GameManager : NetworkBehaviour
     private readonly string connectionScene = "MenuScene";
 
     public static bool peacefulGameMode; //false = battle game mode
-    public int[] connectedPlayers = new int[4]; //used by ScoreTracker
-
-    [ObserversRpc]
-    private void SetConnectedPlayers(int[] newConnectedPlayers)
-    {
-        //give playerNumbers, which is usually a server-only array in other games,
-        //to the client so that scoretracker can track them properly
-        connectedPlayers = newConnectedPlayers;
-    }
+    [SyncVar]
+    public string[] connectedPlayers = new string[4]; //used by ScoreTracker
 }
