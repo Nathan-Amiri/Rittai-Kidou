@@ -6,7 +6,6 @@ using FishNet.Object;
 using FishNet.Connection;
 using FishNet.Managing.Scened;
 using FishNet.Transporting;
-using System;
 
 public class GameManager : NetworkBehaviour
 {

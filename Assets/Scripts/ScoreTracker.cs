@@ -34,9 +34,7 @@ public class ScoreTracker : NetworkBehaviour
 
     private void OnRemoteClientDisconnect(int disconnectedPlayer)
     {
-        //not actually setting disconnected player's score to 0
-        //(since that player's score will be deleted)
-        //merely updating the scores
+        //reset to 0 in case player reconnects
         ChangeScore(disconnectedPlayer, 0);
     }
 

@@ -1,15 +1,18 @@
-using FishNet.Managing.Client;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using FishNet;
+using UnityEngine.UI;
+using System;
 
 public class EscapeMenu : MonoBehaviour
 {
     public static bool paused;
+    [NonSerialized] public int sensitivity;
 
-    //assigned in inspector
+    //assigned in scene
     public GameObject escapeCanvas;
+    public Slider sensitivitySlider;
 
     private bool eliminated;
 
@@ -22,6 +25,8 @@ public class EscapeMenu : MonoBehaviour
 
         Cursor.lockState = paused ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = paused;
+
+        sensitivity = (int)sensitivitySlider.value;
     }
 
     //public void GameEnd()

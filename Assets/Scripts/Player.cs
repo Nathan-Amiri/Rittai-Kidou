@@ -6,17 +6,6 @@ using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
-    //multiplayer/menu!!!!
-    //entity spawning
-    //speed boost
-    //heal
-    //arena larger
-    //player/turret/missile art
-    //sound effects
-    //gas/missile trail
-
-
-
     //assigned in inspector:
     public Rigidbody rb;
 
@@ -58,7 +47,8 @@ public class Player : MonoBehaviour
     private float drag; //dynamic
 
     //rotate player with mouse
-    private readonly float rotateSpeed = 8;
+    private readonly float mediumRotateSpeed = 8;
+    private readonly float sensitivityChangeAmount = 1.5f;
 
     //fires raycast through crosshairs
     private readonly float raycastOffset = .23f;
@@ -84,6 +74,9 @@ public class Player : MonoBehaviour
     //missile
     private float missileAmount = 30; //max 30
     private readonly float missileRefillSpeed = 8;
+
+    //peek
+    private bool peeking;
 
     //health
     private int health = 5;
@@ -139,6 +132,9 @@ public class Player : MonoBehaviour
 
     private void RotateWithMouse() //run in update
     {
+        if (peeking) return;
+
+        float rotateSpeed = mediumRotateSpeed + (sensitivityChangeAmount * escapeMenu.sensitivity);
         float yaw = rotateSpeed * Input.GetAxis("Mouse X");
         float pitch = rotateSpeed * Input.GetAxis("Mouse Y");
         //to avoid changing rotation.z, rotate yaw in worldspace and pitch in localspace
@@ -304,8 +300,13 @@ public class Player : MonoBehaviour
 
     private void Peek() //run in update
     {
-        if (Input.GetButtonDown("Peek") && rb.velocity != Vector3.zero)
+        if (Input.GetButton("Peek") && rb.velocity != Vector3.zero)
+        {
+            peeking = true;
             transform.rotation = Quaternion.LookRotation(rb.velocity.normalized, Vector3.up);
+        }
+        else
+            peeking = false;
     }
 
 
