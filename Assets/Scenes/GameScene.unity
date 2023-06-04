@@ -14,12 +14,12 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 9
-  m_Fog: 0
-  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  m_FogMode: 3
-  m_FogDensity: 0.01
+  m_Fog: 1
+  m_FogColor: {r: 0, g: 1, b: 0.6436949, a: 1}
+  m_FogMode: 2
+  m_FogDensity: 0.0001
   m_LinearFogStart: 0
-  m_LinearFogEnd: 300
+  m_LinearFogEnd: 3000
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
@@ -27,7 +27,7 @@ RenderSettings:
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
   m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
-  m_HaloStrength: 0.5
+  m_HaloStrength: 0.564
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
   m_HaloTexture: {fileID: 0}
@@ -1914,8 +1914,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294955008
-  m_fontColor: {r: 0, g: 0.8166981, b: 1, a: 1}
+    rgba: 4294967040
+  m_fontColor: {r: 0, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -5050,10 +5050,9 @@ MonoBehaviour:
   <SceneId>k__BackingField: 10952722375984617815
   <AssetPathHash>k__BackingField: 0
   _sceneNetworkObjects:
-  - {fileID: 0}
-  - {fileID: 691380900}
   - {fileID: 409490445}
   - {fileID: 414052258}
+  - {fileID: 691380900}
   - {fileID: 1589632426}
 --- !u!1 &414052257
 GameObject:
@@ -5103,10 +5102,9 @@ MonoBehaviour:
   <SceneId>k__BackingField: 10952722377456848516
   <AssetPathHash>k__BackingField: 0
   _sceneNetworkObjects:
-  - {fileID: 0}
-  - {fileID: 691380900}
   - {fileID: 409490445}
   - {fileID: 414052258}
+  - {fileID: 691380900}
   - {fileID: 1589632426}
 --- !u!114 &414052259
 MonoBehaviour:
@@ -8646,8 +8644,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278249471
-  m_fontColor: {r: 1, g: 0.9053154, b: 0, a: 1}
+    rgba: 4278255615
+  m_fontColor: {r: 1, g: 1, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -8881,10 +8879,9 @@ MonoBehaviour:
   <SceneId>k__BackingField: 10952722377668640741
   <AssetPathHash>k__BackingField: 0
   _sceneNetworkObjects:
-  - {fileID: 0}
-  - {fileID: 691380900}
   - {fileID: 409490445}
   - {fileID: 414052258}
+  - {fileID: 691380900}
   - {fileID: 1589632426}
 --- !u!1 &691659334
 GameObject:
@@ -15419,8 +15416,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4291952895
-  m_fontColor: {r: 1, g: 0, b: 0.8220377, a: 1}
+    rgba: 4294902015
+  m_fontColor: {r: 1, g: 0, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -24410,8 +24407,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4280024832
-  m_fontColor: {r: 0, g: 1, b: 0.10753417, a: 1}
+    rgba: 4278255360
+  m_fontColor: {r: 0, g: 1, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

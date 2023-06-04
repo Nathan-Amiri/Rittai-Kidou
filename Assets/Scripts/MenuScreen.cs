@@ -1,6 +1,5 @@
 using FishNet;
 using FishNet.Managing.Client;
-using FishNet.Object;
 using FishNet.Transporting.Tugboat;
 using System.Collections;
 using System.Collections.Generic;
@@ -49,9 +48,9 @@ public class MenuScreen : MonoBehaviour
 
     private void OnClientConnectOrLoad(GameManager gm)
     {
-        Debug.Log(3);
         GameManager.peacefulGameMode = peacefulGameMode;
-        gm.ClientRequestSceneChange("GameScene", InstanceFinder.ClientManager.Connection);
+        if (InstanceFinder.IsHost)
+            gm.RequestSceneChange("GameScene");
     }
 
     public void ChangeUsername()

@@ -15,6 +15,8 @@ public class Player : NetworkBehaviour
     public LineRenderer rightLineRenderer;
     public GameObject leftAnchor;
     public GameObject rightAnchor;
+    public MeshRenderer playerRenderer;
+    public List<Color> playerColors = new();
 
     //assigned by Setup:
     [NonSerialized] public Camera mainCamera;
@@ -90,6 +92,7 @@ public class Player : NetworkBehaviour
             mainCamera.transform.SetParent(transform);
             mainCamera.transform.SetPositionAndRotation(transform.position, transform.rotation);
         }
+        playerRenderer.material.color = playerColors[GameManager.playerNumber - 1];
     }
 
     private void FixedUpdate()

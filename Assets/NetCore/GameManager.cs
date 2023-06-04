@@ -24,7 +24,7 @@ public class GameManager : NetworkBehaviour
     static public int playerNumber { get; private set; }
     //loading screen
     public Canvas waitCanvas; //assigned in inspector
-    private MenuScreen menuScreen; //private SimpleManager simpleManager;
+    //private SimpleManager simpleManager;
 
     private void Awake()
     {
@@ -48,12 +48,9 @@ public class GameManager : NetworkBehaviour
         ////set canvas camera every time client connects or loads
         //waitCanvas.worldCamera = Camera.main;
 
-        if (playerNumber == 0)
+        if (playerNumber == 0) //if client is connecting and not loading a scene
         {
-            //if client is connecting and not loading a scene
-            //menuScreen = GameObject.FindWithTag("MenuCanvas").GetComponent<MenuScreen>();
             //simpleManager = GameObject.FindWithTag("SimpleManager").GetComponent<SimpleManager>();
-            Debug.Log(0);
             string username = PlayerPrefs.GetString("Username");
             RpcFirstConnect(InstanceFinder.ClientManager.Connection, username);
         }
@@ -67,7 +64,6 @@ public class GameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void RpcFirstConnect(NetworkConnection playerConnection, string username)
     {
-        Debug.Log(1);
         //if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != connectionScene)
         //    RpcSceneConditionFailed(playerConnection);
 
@@ -95,29 +91,19 @@ public class GameManager : NetworkBehaviour
     private void RpcPlayerNumberConditionFailed(NetworkConnection conn)
     {
         //simpleManager.errorText.text = "Error: Too Many Players!";
-        menuScreen.errorText.text = "Error: Too Many Players!";
         ClientManager.StopConnection();
     }
     [TargetRpc]
     private void RpcAssignPlayerNumber(NetworkConnection conn, int newPlayerNumber)
     {
-        Debug.Log(2);
-        Debug.Log("Player number is: " + newPlayerNumber);
         playerNumber = newPlayerNumber;
         SendConnectOrLoadEvent();
     }
 
     //scene changing:
-    [ServerRpc (RequireOwnership = false)]
-    public void ClientRequestSceneChange(string newScene, NetworkConnection conn)
-    {
-        Debug.Log(4);
-        RequestSceneChange(newScene, conn);
-    }
     [Server]
-    public void RequestSceneChange(string newScene, NetworkConnection conn)
+    public void RequestSceneChange(string newScene)
     {
-        Debug.Log(5);
         //TurnOnWaitCanvas();
 
         //sceneLoadedPlayers = 0;
@@ -132,10 +118,7 @@ public class GameManager : NetworkBehaviour
             ReplaceScenes = ReplaceOption.All
         };
 
-        if (IsHost && conn == ClientManager.Connection)
-            NetworkManager.SceneManager.LoadGlobalScenes(sceneLoadData);
-        else
-            NetworkManager.SceneManager.LoadConnectionScenes(conn, sceneLoadData);
+        NetworkManager.SceneManager.LoadGlobalScenes(sceneLoadData);
 
         //wait for beacon signal
     }
