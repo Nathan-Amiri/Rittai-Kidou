@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using FishNet.Object;
 using System;
+using Unity.VisualScripting;
+using UnityEngine.SocialPlatforms;
 
 public class Player : NetworkBehaviour
 {
@@ -15,8 +17,7 @@ public class Player : NetworkBehaviour
     public LineRenderer rightLineRenderer;
     public GameObject leftAnchor;
     public GameObject rightAnchor;
-    public MeshRenderer playerRenderer;
-    public List<Color> playerColors = new();
+    public MeshRenderer playerRenderer; //accessed by setup
 
     //assigned by Setup:
     [NonSerialized] public Camera mainCamera;
@@ -92,7 +93,6 @@ public class Player : NetworkBehaviour
             mainCamera.transform.SetParent(transform);
             mainCamera.transform.SetPositionAndRotation(transform.position, transform.rotation);
         }
-        playerRenderer.material.color = playerColors[GameManager.playerNumber - 1];
     }
 
     private void FixedUpdate()
@@ -119,7 +119,7 @@ public class Player : NetworkBehaviour
 
         Gas();
 
-        FireMissile();
+        Missile();
 
         Peek();
     }
@@ -276,7 +276,17 @@ public class Player : NetworkBehaviour
         rb.velocity *= gasBoost;
     }
 
-    private void FireMissile() //run in update
+
+
+
+
+
+
+
+
+
+    //Missiles:
+    private void Missile() //run in update
     {
         //update meter
         missileScaler.localScale = new Vector2(missileScaler.localScale.x, missileAmount / 30);
@@ -288,12 +298,95 @@ public class Player : NetworkBehaviour
         else if (missileAmount < 30)
             missileAmount += missileRefillSpeed * Time.deltaTime;
 
+        //fire missile
         if (Input.GetButtonDown("Fire") && missileAmount > 10 && !EscapeMenu.paused)
         {
             missileAmount -= 10;
-            objectPool.GetPooledInfo().missile.Launch("Turret", this, transform);
+            CreateMissile(transform.position, transform.rotation, 0);
+            RpcServerCreateMissile(transform.position, transform.rotation, TimeManager.Tick);
         }
+
+        //MissileTimer();
     }
+    private const float maxPassedTime = 0.3f; //never change this!
+    [ServerRpc]
+    private void RpcServerCreateMissile(Vector3 firePosition, Quaternion fireRotation, uint tick)
+    {
+        if (!IsOwner)
+        {
+            float passedTime = (float)TimeManager.TimePassed(tick, false); //false prevents negative
+            passedTime = Mathf.Min(maxPassedTime / 2f, passedTime);
+
+            CreateMissile(firePosition, fireRotation, passedTime);
+        }
+
+        RpcClientCreateMissile(firePosition, fireRotation, tick);
+    }
+    [ObserversRpc]
+    private void RpcClientCreateMissile(Vector3 firePosition, Quaternion fireRotation, uint tick)
+    {
+        if (IsServer || IsOwner)
+            return;
+
+        float passedTime = (float)TimeManager.TimePassed(tick, false); //false prevents negative
+        passedTime = Mathf.Min(maxPassedTime / 2f, passedTime);
+
+        CreateMissile(firePosition, fireRotation, passedTime);
+    }
+    private void CreateMissile(Vector3 firePosition, Quaternion fireRotation, float passedTime)
+    {
+        Missile newMissile = objectPool.GetPooledMissile();
+        //missileObject = newMissile.gameObject; //used for missile timer
+
+        float displacementMagnitude = passedTime / 13.29f; //(number of ticks missile has already traveled) / 13.29 = the distance the missile has traveled
+        Vector3 fireForward = fireRotation * Vector3.forward;
+        Vector3 displacement = newMissile.missileSpeed * displacementMagnitude * fireForward;
+        Vector3 missilePosition = firePosition += displacement;
+
+        newMissile.Launch(!IsOwner, this, missilePosition, fireRotation);
+    }
+
+    //missile timer code used to initially test the average distance a missile travels per tick
+    //(13.29 according to last test)
+    //private readonly List<float> distancesPerTick = new();
+    //private int ticks = 0;
+    //private GameObject missileObject;
+    //private Vector3 cachedMissilePosition;
+    //private void MissileTimer() //run in update
+    //{
+    //    if (missileObject != null && TimeManager.Tick > ticks)
+    //    {
+    //        ticks = (int)TimeManager.Tick;
+
+    //        if (cachedMissilePosition != default)
+    //            distancesPerTick.Add(Vector3.Distance(cachedMissilePosition, missileObject.transform.position));
+    //        cachedMissilePosition = missileObject.transform.position;
+    //    }
+    //    else if (missileObject == null)
+    //        cachedMissilePosition = default;
+
+    //    float total = 0f;
+    //    foreach (float f in distancesPerTick)  //Calculate the total of all floats
+    //        total += f;
+    //    Debug.Log(total / distancesPerTick.Count); //average
+    //}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private void Peek() //run in update
     {

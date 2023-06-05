@@ -29,7 +29,7 @@ public class Setup : NetworkBehaviour
 
     public List<GameObject> hearts = new();
 
-    private GameManager gameManager;
+    public List<Color> playerColors = new();
 
     private void OnEnable()
     {
@@ -42,23 +42,24 @@ public class Setup : NetworkBehaviour
 
     private void OnSpawn(GameManager gm)
     {
-        gameManager = gm;
         Vector3 temporarySpawnPosition = new(0, 10, 0);
-        SpawnPlayer(InstanceFinder.ClientManager.Connection, GameManager.playerNumber, temporarySpawnPosition);
+        Color playerColor = playerColors[GameManager.playerNumber - 1];
+        RpcSpawnPlayer(InstanceFinder.ClientManager.Connection, GameManager.playerNumber, temporarySpawnPosition, playerColor);
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void SpawnPlayer(NetworkConnection conn, int newPlayerNumber, Vector3 newPlayerPosition)
+    private void RpcSpawnPlayer(NetworkConnection conn, int newPlayerNumber, Vector3 newPlayerPosition, Color playerColor)
     {
         GameObject newPlayerObject = Instantiate(playerPref, newPlayerPosition, Quaternion.identity);
         InstanceFinder.ServerManager.Spawn(newPlayerObject, conn);
-        RpcStartPlayer(newPlayerObject, conn);
+        RpcStartPlayer(newPlayerObject, playerColor);
     }
 
-    [ObserversRpc(BufferLast = true)] //bufferlast is needed because this rpc is run on clients that may not have received the beacon signal yet
-    private void RpcStartPlayer(GameObject newPlayerObject, NetworkConnection conn)
+    [ObserversRpc(BufferLast = true)]
+    private void RpcStartPlayer(GameObject newPlayerObject, Color playerColor)
     {
         Player newPlayer = newPlayerObject.GetComponent<Player>();
+        newPlayer.playerRenderer.material.color = playerColor;
         newPlayer.mainCamera = mainCamera;
         newPlayer.leftCrosshair = leftCrosshair;
         newPlayer.rightCrosshair = rightCrosshair;

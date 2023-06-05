@@ -5,46 +5,41 @@ using UnityEngine;
 public class ObjectPool : MonoBehaviour
 {
     public static ObjectPool sharedInstance;
-    private List<MissileInfo> pooledObjects;
-    public GameObject objectToPool; //assigned in inspector
+    private List<Missile> pooledMissiles;
+
     private int amountToPool;
+
+    //assigned in scene:
+    public GameObject objectToPool;
+    public Transform poolParent;
 
     private void Awake()
     {
         sharedInstance = this;
 
-        amountToPool = 40;
+        amountToPool = 50;
     }
 
     private void Start()
     {
-        pooledObjects = new List<MissileInfo>();
+        pooledMissiles = new List<Missile>();
         GameObject tmp;
         for (int i = 0; i < amountToPool; i++)
         {
-            tmp = Instantiate(objectToPool, transform);
+            tmp = Instantiate(objectToPool, poolParent);
             tmp.SetActive(false);
-            MissileInfo newInfo = new()
-            {
-                obj = tmp,
-                missile = tmp.GetComponent<Missile>()
-            };
-            pooledObjects.Add(newInfo);
+            Missile missile = tmp.GetComponent<Missile>();
+            pooledMissiles.Add(missile);
         }
     }
 
-    public MissileInfo GetPooledInfo()
+    public Missile GetPooledMissile()
     {
         for (int i = 0; i < amountToPool; i++)
         {
-            if (!pooledObjects[i].obj.activeSelf)
-                return pooledObjects[i];
+            if (!pooledMissiles[i].gameObject.activeSelf)
+                return pooledMissiles[i];
         }
         return default;
     }
-}
-public struct MissileInfo
-{
-    public GameObject obj;
-    public Missile missile;
 }

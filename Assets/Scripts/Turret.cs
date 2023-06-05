@@ -66,7 +66,7 @@ public class Turret : MonoBehaviour
 
             //place pause check inside loop so that loop continues to run when paused
             if (!EscapeMenu.paused)
-                objectPool.GetPooledInfo().missile.Launch("Player", null, transform);
+                objectPool.GetPooledMissile().Launch(true, null, transform.position, transform.rotation);
 
             yield return new WaitForSeconds(fireRate);
         }
