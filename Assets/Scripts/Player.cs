@@ -31,7 +31,7 @@ public class Player : NetworkBehaviour
     [NonSerialized] public Transform missileScaler;
     [NonSerialized] public Image missileAmountImage;
 
-    [NonSerialized] public ObjectPool objectPool;
+    [NonSerialized] public MissileLauncher missileLauncher;
     [NonSerialized] public EscapeMenu escapeMenu;
     [NonSerialized] public ScoreTracker scoreTracker;
 
@@ -276,22 +276,12 @@ public class Player : NetworkBehaviour
         rb.velocity *= gasBoost;
     }
 
-
-
-
-
-
-
-
-
-
-    //Missiles:
     private void Missile() //run in update
     {
         //update meter
         missileScaler.localScale = new Vector2(missileScaler.localScale.x, missileAmount / 30);
         missileAmountImage.color = missileAmount > 10 ? Color.blue : Color.gray;
-
+    
         //refill meter
         if (missileAmount > 30)
             missileAmount = 30;
@@ -302,91 +292,17 @@ public class Player : NetworkBehaviour
         if (Input.GetButtonDown("Fire") && missileAmount > 10 && !EscapeMenu.paused)
         {
             missileAmount -= 10;
-            CreateMissile(transform.position, transform.rotation, 0);
-            RpcServerCreateMissile(transform.position, transform.rotation, TimeManager.Tick);
+            MissileInfo info = new()
+            {
+                firePosition = transform.position,
+                fireRotation = transform.rotation,
+                launcher = this
+            };
+            missileLauncher.Fire(info);
         }
 
         //MissileTimer();
     }
-    private const float maxPassedTime = 0.3f; //never change this!
-    [ServerRpc]
-    private void RpcServerCreateMissile(Vector3 firePosition, Quaternion fireRotation, uint tick)
-    {
-        if (!IsOwner)
-        {
-            float passedTime = (float)TimeManager.TimePassed(tick, false); //false prevents negative
-            passedTime = Mathf.Min(maxPassedTime / 2f, passedTime);
-
-            CreateMissile(firePosition, fireRotation, passedTime);
-        }
-
-        RpcClientCreateMissile(firePosition, fireRotation, tick);
-    }
-    [ObserversRpc]
-    private void RpcClientCreateMissile(Vector3 firePosition, Quaternion fireRotation, uint tick)
-    {
-        if (IsServer || IsOwner)
-            return;
-
-        float passedTime = (float)TimeManager.TimePassed(tick, false); //false prevents negative
-        passedTime = Mathf.Min(maxPassedTime / 2f, passedTime);
-
-        CreateMissile(firePosition, fireRotation, passedTime);
-    }
-    private void CreateMissile(Vector3 firePosition, Quaternion fireRotation, float passedTime)
-    {
-        Missile newMissile = objectPool.GetPooledMissile();
-        //missileObject = newMissile.gameObject; //used for missile timer
-
-        float displacementMagnitude = passedTime / 13.29f; //(number of ticks missile has already traveled) / 13.29 = the distance the missile has traveled
-        Vector3 fireForward = fireRotation * Vector3.forward;
-        Vector3 displacement = newMissile.missileSpeed * displacementMagnitude * fireForward;
-        Vector3 missilePosition = firePosition += displacement;
-
-        newMissile.Launch(!IsOwner, this, missilePosition, fireRotation);
-    }
-
-    //missile timer code used to initially test the average distance a missile travels per tick
-    //(13.29 according to last test)
-    //private readonly List<float> distancesPerTick = new();
-    //private int ticks = 0;
-    //private GameObject missileObject;
-    //private Vector3 cachedMissilePosition;
-    //private void MissileTimer() //run in update
-    //{
-    //    if (missileObject != null && TimeManager.Tick > ticks)
-    //    {
-    //        ticks = (int)TimeManager.Tick;
-
-    //        if (cachedMissilePosition != default)
-    //            distancesPerTick.Add(Vector3.Distance(cachedMissilePosition, missileObject.transform.position));
-    //        cachedMissilePosition = missileObject.transform.position;
-    //    }
-    //    else if (missileObject == null)
-    //        cachedMissilePosition = default;
-
-    //    float total = 0f;
-    //    foreach (float f in distancesPerTick)  //Calculate the total of all floats
-    //        total += f;
-    //    Debug.Log(total / distancesPerTick.Count); //average
-    //}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     private void Peek() //run in update
     {

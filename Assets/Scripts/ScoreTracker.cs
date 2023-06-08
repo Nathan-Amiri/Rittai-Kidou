@@ -30,17 +30,14 @@ public class ScoreTracker : NetworkBehaviour
     {
         gameManager = gm;
         ChangeScore(GameManager.playerNumber, 0, true);
+
+        modeText.text = "Mode: " + (gameManager.peacefulGameMode ? "Peaceful" : "Battle");
     }
 
     private void OnRemoteClientDisconnect(int disconnectedPlayer)
     {
         //reset to 0 in case player reconnects
         ChangeScore(disconnectedPlayer, 0, true);
-    }
-
-    private void Start()
-    {
-        modeText.text = "Mode: " + (GameManager.peacefulGameMode ? "Peaceful" : "Battle");
     }
 
     [ServerRpc (RequireOwnership = false)]

@@ -5012,7 +5012,7 @@ MonoBehaviour:
   gasAmountImage: {fileID: 2002024714}
   missileScaler: {fileID: 1877653116}
   missileAmountImage: {fileID: 467946060}
-  objectPool: {fileID: 409490442}
+  missileLauncher: {fileID: 414052261}
   escapeMenu: {fileID: 691380899}
   scoreTracker: {fileID: 414052259}
   hearts:
@@ -5070,6 +5070,7 @@ GameObject:
   m_Component:
   - component: {fileID: 414052260}
   - component: {fileID: 414052259}
+  - component: {fileID: 414052261}
   - component: {fileID: 414052258}
   m_Layer: 0
   m_Name: NobScripts
@@ -5095,6 +5096,7 @@ MonoBehaviour:
   <PredictedSpawn>k__BackingField: {fileID: 0}
   _networkBehaviours:
   - {fileID: 414052259}
+  - {fileID: 414052261}
   <ParentNetworkObject>k__BackingField: {fileID: 0}
   <ChildNetworkObjects>k__BackingField: []
   _isNetworked: 1
@@ -5148,6 +5150,22 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &414052261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 414052257}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5bfbf37c7740fa45ab49becd974cc47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _componentIndexCache: 1
+  _addedNetworkObject: {fileID: 414052258}
+  _networkObjectCache: {fileID: 414052258}
+  objectPool: {fileID: 409490442}
 --- !u!1001 &415080973
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -10,17 +10,17 @@ public class Missile : MonoBehaviour
     public Animator anim;
     public SphereCollider sphereCollider;
 
-    [NonSerialized] public readonly float missileSpeed = 400; //read by player/turret
+    [NonSerialized] public readonly float missileSpeed = 400; //read by missilelauncher
 
     private Player immunePlayer;
 
-    public void Launch(bool isEnemy, Player launcher, Vector3 firePosition, Quaternion fireRotation) //called by player/turret
+    public void Launch(bool isEnemy, Player launcher, Vector3 firePosition, Quaternion fireRotation) //only called by missilelauncher
     {
-        immunePlayer = launcher;
+        immunePlayer = launcher; //if launched by turret, launcher is null
 
         sphereCollider.enabled = false;
 
-        transform.rotation = fireRotation;
+        transform.rotation = fireRotation; //do NOT use SetPositionAndRotation
         transform.position = firePosition + (transform.forward * 10);
 
         gameObject.SetActive(true);
@@ -41,24 +41,27 @@ public class Missile : MonoBehaviour
     private void OnTriggerEnter(Collider col)
     {
         //prioritize enemies over terrain by checking for them first
-        //if (col.CompareTag(enemyTag))
-        //{
-        //    if (enemyTag == "Turret")
-        //    {
-        //        col.GetComponent<Turret>().Destroy();
-        //        currentLauncher.EarnPoints(30);
-        //    }
-        //    else if (enemyTag == "Player")
-        //    {
-        //        col.GetComponent<Player>().TakeDamage();
-        //        if (currentLauncher != null)
-        //            currentLauncher.EarnPoints(100);
-        //    }
+        string enemyTag = "Turret";
+        if (col.CompareTag(enemyTag))
+        {
+            if (enemyTag == "Turret")
+            {
+                col.GetComponent<Turret>().Destroy();
+                //currentLauncher.EarnPoints(30);
+            }
+            //    else if (enemyTag == "Player")
+            //    {
+            //        col.GetComponent<Player>().TakeDamage();
+            //        if (currentLauncher != null)
+            //            currentLauncher.EarnPoints(100);
+            //    }
 
-        //    Explode();
-        //}
-        //else if (col.CompareTag("Terrain"))
-        //    Explode();
+            Explode();
+            //}
+
+        }
+        else if (col.CompareTag("Terrain"))
+            Explode();
     }
 
     private void Explode()
@@ -66,7 +69,7 @@ public class Missile : MonoBehaviour
         rb.velocity = Vector3.zero;
 
         //if (enemyTag == "Turret")
-        //    anim.SetTrigger("Explosion");
+        anim.SetTrigger("Explosion");
         //else if (enemyTag == "Player")
         //    anim.SetTrigger("EnemyExplosion");
 

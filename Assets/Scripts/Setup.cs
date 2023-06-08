@@ -23,13 +23,16 @@ public class Setup : NetworkBehaviour
     public Transform missileScaler;
     public Image missileAmountImage;
 
-    public ObjectPool objectPool;
+    public MissileLauncher missileLauncher;
     public EscapeMenu escapeMenu;
     public ScoreTracker scoreTracker;
 
     public List<GameObject> hearts = new();
 
     public List<Color> playerColors = new();
+
+    //assigned dynamically
+    private GameManager gameManager;
 
     private void OnEnable()
     {
@@ -42,6 +45,8 @@ public class Setup : NetworkBehaviour
 
     private void OnSpawn(GameManager gm)
     {
+        gameManager = gm;
+
         Vector3 temporarySpawnPosition = new(0, 10, 0);
         Color playerColor = playerColors[GameManager.playerNumber - 1];
         RpcSpawnPlayer(InstanceFinder.ClientManager.Connection, GameManager.playerNumber, temporarySpawnPosition, playerColor);
@@ -51,6 +56,10 @@ public class Setup : NetworkBehaviour
     private void RpcSpawnPlayer(NetworkConnection conn, int newPlayerNumber, Vector3 newPlayerPosition, Color playerColor)
     {
         GameObject newPlayerObject = Instantiate(playerPref, newPlayerPosition, Quaternion.identity);
+
+        //rigidbody only needs to be added on the server
+        gameManager.playerRbs[newPlayerNumber - 1] = newPlayerObject.GetComponent<Rigidbody>();
+
         InstanceFinder.ServerManager.Spawn(newPlayerObject, conn);
         RpcStartPlayer(newPlayerObject, playerColor);
     }
@@ -67,7 +76,7 @@ public class Setup : NetworkBehaviour
         newPlayer.gasAmountImage = gasAmountImage;
         newPlayer.missileScaler = missileScaler;
         newPlayer.missileAmountImage = missileAmountImage;
-        newPlayer.objectPool = objectPool;
+        newPlayer.missileLauncher = missileLauncher;
         newPlayer.escapeMenu = escapeMenu;
         newPlayer.scoreTracker = scoreTracker;
 

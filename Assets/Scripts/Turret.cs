@@ -1,15 +1,16 @@
+using FishNet.Object;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Turret : MonoBehaviour
+public class Turret : NetworkBehaviour
 {
-    //assigned in inspector
+    //assigned in prefab
     public GameObject meshes;
     public SphereCollider sphereCollider;
 
+    //assigned dynamically
     private ObjectPool objectPool;
-    private Rigidbody playerRB;
 
     private Vector3 playerPosition;
     private Vector3 playerMoveDirection;
@@ -20,25 +21,61 @@ public class Turret : MonoBehaviour
     private bool canFire = true;
     private readonly float respawnTime = 20;
 
+    private GameManager gameManager;
+
+    private void OnEnable()
+    {
+        GameManager.OnClientConnectOrLoad += OnSpawn;
+    }
+    private void OnDisable()
+    {
+        GameManager.OnClientConnectOrLoad -= OnSpawn;
+    }
+
     private void Awake()
     {
-        return;
-        playerRB = GameObject.FindWithTag("Player").GetComponent<Rigidbody>();
+        //playerRB = GameObject.FindWithTag("Player").GetComponent<Rigidbody>();
         objectPool = GameObject.Find("MiscScripts").GetComponent<ObjectPool>();
     }
 
-    private void Start()
+    private void OnSpawn(GameManager gm)
     {
-        return;
+        if (!IsServer)
+            return;
+
+        if (gm.peacefulGameMode)
+        {
+            Despawn(gameObject);
+            return;
+        }
+        
+        gameManager = gm;
         StartCoroutine(FireMissile());
     }
 
     private void Update()
     {
-        return;
-        playerPosition = playerRB.transform.position;
-        playerMoveDirection = playerRB.velocity.normalized;
-        playerSpeed = playerRB.velocity.magnitude;
+        if (gameManager == null) return; //must be battlemode and server
+
+        Rigidbody playerRb = null;
+        float shortestDistance = 0;
+        foreach (Rigidbody rb in gameManager.playerRbs)
+        {
+            if (rb == null) continue;
+
+            float newDistance = Vector3.Distance(transform.position, rb.transform.position);
+            if (shortestDistance == 0 || newDistance < shortestDistance)
+            {
+                shortestDistance = newDistance;
+                playerRb = rb;
+            }
+        }
+        if (playerRb == null)
+            return; //playerRb not loaded by Setup yet
+
+        playerPosition = playerRb.transform.position;
+        playerMoveDirection = playerRb.velocity.normalized;
+        playerSpeed = playerRb.velocity.magnitude;
 
         //how far in the future the player will be predicted
         float futureTime = Random.Range(.5f, 1);
@@ -54,19 +91,14 @@ public class Turret : MonoBehaviour
         //transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * turretRotateSpeed);
     }
 
-    private IEnumerator FireMissile()
+    private IEnumerator FireMissile() //only run on server
     {
-        //initial delay, random so that turrets do not all fire at the same time
-        yield return new WaitForSeconds(Random.Range(5, 8));
+        //initial delay of at least 5. Random so that turrets do not all fire at the same time
+        yield return new WaitForSeconds(Random.Range(5, 5 + fireRate));
 
         while (canFire)
         {
-            //if (GameManager.peacefulGameMode)
-            //    break;
-
-            //place pause check inside loop so that loop continues to run when paused
-            if (!EscapeMenu.paused)
-                objectPool.GetPooledMissile().Launch(true, null, transform.position, transform.rotation);
+            objectPool.GetPooledMissile().Launch(true, null, transform.position, transform.rotation);
 
             yield return new WaitForSeconds(fireRate);
         }

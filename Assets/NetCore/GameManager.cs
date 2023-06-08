@@ -7,6 +7,7 @@ using FishNet.Connection;
 using FishNet.Managing.Scened;
 using FishNet.Transporting;
 using FishNet.Object.Synchronizing;
+using System;
 
 public class GameManager : NetworkBehaviour
 {
@@ -210,10 +211,13 @@ public class GameManager : NetworkBehaviour
 
     //game-specific code:
 
-    //the scene where clients first connect, and which is loaded upon disconnecting
+    //the scene clients first connect from, and which is loaded upon disconnecting
     private readonly string connectionScene = "MenuScene";
 
-    public static bool peacefulGameMode; //false = battle game mode
+    [NonSerialized] public bool peacefulGameMode; //false = battle game mode
+
     [SyncVar]
     public string[] connectedPlayers = new string[4]; //used by ScoreTracker
+
+    public Rigidbody[] playerRbs = new Rigidbody[4]; //server only, filled by Setup, read by Turret
 }

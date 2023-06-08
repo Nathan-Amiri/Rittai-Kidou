@@ -48,7 +48,7 @@ public class MenuScreen : MonoBehaviour
 
     private void OnClientConnectOrLoad(GameManager gm)
     {
-        GameManager.peacefulGameMode = peacefulGameMode;
+        gm.peacefulGameMode = peacefulGameMode;
         if (InstanceFinder.IsHost)
             gm.RequestSceneChange("GameScene");
     }
