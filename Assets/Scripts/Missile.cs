@@ -1,9 +1,10 @@
+using FishNet.Object;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Missile : MonoBehaviour
+public class Missile : NetworkBehaviour
 {
     //assigned in inspector
     public Rigidbody rb;
@@ -13,14 +14,18 @@ public class Missile : MonoBehaviour
     [NonSerialized] public readonly float missileSpeed = 400; //read by missilelauncher
 
     private Player immunePlayer;
+    private bool isEnemy;
 
-    public void Launch(bool isEnemy, Player launcher, Vector3 firePosition, Quaternion fireRotation) //only called by missilelauncher
+    //only called by missilelauncher, run on client and server
+    public void Launch(bool newIsEnemy, Player launcher, Vector3 firePosition, Quaternion fireRotation)
     {
         immunePlayer = launcher; //if launched by turret, launcher is null
+        isEnemy = newIsEnemy;
 
         sphereCollider.enabled = false;
 
-        transform.rotation = fireRotation; //do NOT use SetPositionAndRotation
+        transform.rotation = fireRotation;
+        //do NOT use SetPositionAndRotation, rotation must change first
         transform.position = firePosition + (transform.forward * 10);
 
         gameObject.SetActive(true);
@@ -40,38 +45,43 @@ public class Missile : MonoBehaviour
 
     private void OnTriggerEnter(Collider col)
     {
+        if (!IsServer)
+            return;
+
         //prioritize enemies over terrain by checking for them first
-        string enemyTag = "Turret";
-        if (col.CompareTag(enemyTag))
+        if (col.CompareTag("Player"))
         {
-            if (enemyTag == "Turret")
-            {
-                col.GetComponent<Turret>().Destroy();
-                //currentLauncher.EarnPoints(30);
-            }
-            //    else if (enemyTag == "Player")
-            //    {
-            //        col.GetComponent<Player>().TakeDamage();
-            //        if (currentLauncher != null)
-            //            currentLauncher.EarnPoints(100);
-            //    }
+            Player hitPlayer = col.GetComponent<Player>();
+            if (hitPlayer == immunePlayer)
+                return;
 
+            hitPlayer.TakeDamage();
+            if (immunePlayer != null)
+                immunePlayer.EarnPoints(100);
             Explode();
-            //}
+        }
+        else if (col.CompareTag("Turret"))
+        {
+            if (immunePlayer == null)
+                return; //if a turret hit another turret
 
+            col.GetComponent<Turret>().Destroy();
+            immunePlayer.EarnPoints(30);
+            Explode();
         }
         else if (col.CompareTag("Terrain"))
             Explode();
+
     }
 
     private void Explode()
     {
         rb.velocity = Vector3.zero;
 
-        //if (enemyTag == "Turret")
-        anim.SetTrigger("Explosion");
-        //else if (enemyTag == "Player")
-        //    anim.SetTrigger("EnemyExplosion");
+        if (isEnemy)
+            anim.SetTrigger("EnemyExplosion");
+        else
+            anim.SetTrigger("Explosion");
 
         StartCoroutine(EndExplosion());
     }

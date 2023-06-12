@@ -60,7 +60,8 @@ public class MissileLauncher : NetworkBehaviour
         Vector3 displacement = newMissile.missileSpeed * displacementMagnitude * fireForward;
         Vector3 missilePosition = info.firePosition += displacement;
 
-        newMissile.Launch(!info.launcher.IsOwner, info.launcher, missilePosition, info.fireRotation);
+        bool isEnemy = info.launcher == null || !info.launcher.IsOwner;
+        newMissile.Launch(isEnemy, info.launcher, missilePosition, info.fireRotation);
     }
 
     //missile timer code used to initially test the average distance a missile travels per tick

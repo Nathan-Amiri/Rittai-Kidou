@@ -163,6 +163,12 @@ public class GameManager : NetworkBehaviour
 
         ServerManager.OnRemoteConnectionState += ClientDisconnected; //if client disconnects. Can't be subscribed in OnEnable
     }
+    public override void OnStopServer()
+    {
+        base.OnStopServer();
+
+        ServerManager.OnRemoteConnectionState -= ClientDisconnected; //if client disconnects. Can't be subscribed in OnEnable
+    }
     [Server]
     private void ClientDisconnected(NetworkConnection arg1, RemoteConnectionStateArgs arg2)
     {

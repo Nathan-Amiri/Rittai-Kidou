@@ -9,13 +9,14 @@ public class Turret : NetworkBehaviour
     public GameObject meshes;
     public SphereCollider sphereCollider;
 
-    //assigned dynamically
-    private ObjectPool objectPool;
+    //assigned in scene
+    public MissileLauncher missileLauncher;
 
     private Vector3 playerPosition;
     private Vector3 playerMoveDirection;
     private float playerSpeed;
 
+    private readonly float turretRotateSpeed = 3;
     private readonly float fireRate = 3;
 
     private bool canFire = true;
@@ -32,12 +33,6 @@ public class Turret : NetworkBehaviour
         GameManager.OnClientConnectOrLoad -= OnSpawn;
     }
 
-    private void Awake()
-    {
-        //playerRB = GameObject.FindWithTag("Player").GetComponent<Rigidbody>();
-        objectPool = GameObject.Find("MiscScripts").GetComponent<ObjectPool>();
-    }
-
     private void OnSpawn(GameManager gm)
     {
         if (!IsServer)
@@ -48,7 +43,7 @@ public class Turret : NetworkBehaviour
             Despawn(gameObject);
             return;
         }
-        
+
         gameManager = gm;
         StartCoroutine(FireMissile());
     }
@@ -86,9 +81,8 @@ public class Turret : NetworkBehaviour
         //the direction the turret wants to fire in
         Vector3 targetFireDirection = (playerFuturePosition - transform.position).normalized;
 
-        transform.rotation = Quaternion.LookRotation(targetFireDirection);
-        //Quaternion targetRotation = Quaternion.LookRotation(targetFireDirection);
-        //transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * turretRotateSpeed);
+        Quaternion targetRotation = Quaternion.LookRotation(targetFireDirection);
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * turretRotateSpeed);
     }
 
     private IEnumerator FireMissile() //only run on server
@@ -98,7 +92,13 @@ public class Turret : NetworkBehaviour
 
         while (canFire)
         {
-            objectPool.GetPooledMissile().Launch(true, null, transform.position, transform.rotation);
+            MissileInfo info = new()
+            {
+                firePosition = transform.position,
+                fireRotation = transform.rotation,
+                launcher = null
+            };
+            missileLauncher.Fire(info);
 
             yield return new WaitForSeconds(fireRate);
         }
@@ -106,8 +106,6 @@ public class Turret : NetworkBehaviour
 
     public void Destroy()
     {
-        //ScoreTracker.currentScore += 100;
-
         canFire = false;
         meshes.SetActive(false);
         sphereCollider.enabled = false;
