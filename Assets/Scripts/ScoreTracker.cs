@@ -13,8 +13,7 @@ public class ScoreTracker : NetworkBehaviour
 
     private GameManager gameManager;
 
-    [SyncVar]
-    private readonly int[] playerScores = new int[4];
+    private readonly int[] playerScores = new int[4]; //server only
 
     private void OnEnable()
     {
@@ -24,12 +23,13 @@ public class ScoreTracker : NetworkBehaviour
     private void OnDisable()
     {
         GameManager.OnClientConnectOrLoad -= OnClientConnectOrLoad;
+        GameManager.OnRemoteClientDisconnect -= OnRemoteClientDisconnect;
     }
 
     private void OnClientConnectOrLoad(GameManager gm)
     {
         gameManager = gm;
-        ChangeScore(GameManager.playerNumber, 0, true);
+        RpcChangeScore(GameManager.playerNumber, 0, true);
 
         modeText.text = "Mode: " + (gameManager.peacefulGameMode ? "Peaceful" : "Battle");
     }
@@ -37,21 +37,21 @@ public class ScoreTracker : NetworkBehaviour
     private void OnRemoteClientDisconnect(int disconnectedPlayer)
     {
         //reset to 0 in case player reconnects
-        ChangeScore(disconnectedPlayer, 0, true);
+        RpcChangeScore(disconnectedPlayer, 0, true);
     }
 
     [ServerRpc (RequireOwnership = false)]
-    public void ChangeScore(int player, int amount, bool replace)
+    public void RpcChangeScore(int player, int amount, bool replace)
     {
         if (replace)
             playerScores[player - 1] = amount;
         else
             playerScores[player - 1] += amount;
-        ClientChangeScore();
+        RpcClientChangeScore(playerScores);
     }
 
     [ObserversRpc]
-    private void ClientChangeScore()
+    private void RpcClientChangeScore(int[] newPlayerScores)
     {
         for (int i = 0; i < playerScoreTexts.Length; i++)
         {
@@ -63,7 +63,7 @@ public class ScoreTracker : NetworkBehaviour
             else
             {
                 string you = GameManager.playerNumber == i + 1 ? " (You)" : "";
-                newText = gameManager.connectedPlayers[i] + ": " + playerScores[i] + you;
+                newText = gameManager.connectedPlayers[i] + ": " + newPlayerScores[i] + you;
             }
 
             playerScoreTexts[i].text = newText;

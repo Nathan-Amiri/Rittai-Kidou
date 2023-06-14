@@ -42,7 +42,7 @@ public class MissileLauncher : NetworkBehaviour
     {
         if (IsServer) //missile has already been created on the server
             return;
-        if (info.launcher.IsOwner) //missile has already been created on this client
+        if (info.launcher != null && info.launcher.IsOwner) //missile has already been created on this client
             return;
 
         float passedTime = (float)TimeManager.TimePassed(tick, false); //false prevents negative

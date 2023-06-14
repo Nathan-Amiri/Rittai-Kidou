@@ -30,6 +30,7 @@ public class GameManager : NetworkBehaviour
     private void Awake()
     {
         playerNumbers = new int[4];
+        InitializeConnectedPlayers();
     }
 
     private void OnEnable()
@@ -222,8 +223,13 @@ public class GameManager : NetworkBehaviour
 
     [NonSerialized] public bool peacefulGameMode; //false = battle game mode
 
-    [SyncVar]
-    public string[] connectedPlayers = new string[4]; //used by ScoreTracker
+    [SyncObject]
+    public readonly SyncList<string> connectedPlayers = new(); //used by ScoreTracker
+    private void InitializeConnectedPlayers() //run in awake
+    {
+        for (int i = 0; i < 4; i++)
+            connectedPlayers.Add("");
+    }
 
     public Rigidbody[] playerRbs = new Rigidbody[4]; //server only, filled by Setup, read by Turret
 }

@@ -15,7 +15,7 @@ public class EscapeMenu : NetworkBehaviour
     public GameObject escapeCanvas;
     public Slider sensitivitySlider;
 
-    private bool eliminated;
+    //private bool eliminated;
 
     private void Update()
     {

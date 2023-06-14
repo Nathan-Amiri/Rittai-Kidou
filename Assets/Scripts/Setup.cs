@@ -67,8 +67,9 @@ public class Setup : NetworkBehaviour
     [ObserversRpc(BufferLast = true)]
     private void RpcStartPlayer(GameObject newPlayerObject, Color playerColor)
     {
+        if (newPlayerObject == null) return; //if this player has already disconnected
+
         Player newPlayer = newPlayerObject.GetComponent<Player>();
-        newPlayer.playerRenderer.material.color = playerColor;
         newPlayer.mainCamera = mainCamera;
         newPlayer.leftCrosshair = leftCrosshair;
         newPlayer.rightCrosshair = rightCrosshair;
@@ -79,7 +80,8 @@ public class Setup : NetworkBehaviour
         newPlayer.missileLauncher = missileLauncher;
         newPlayer.escapeMenu = escapeMenu;
         newPlayer.scoreTracker = scoreTracker;
+        newPlayer.hearts = hearts;
 
-        newPlayer.OnSpawn();
+        newPlayer.OnSpawn(playerColor);
     }
 }

@@ -1,10 +1,10 @@
-using FishNet.Object;
+using FishNet;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Missile : NetworkBehaviour
+public class Missile : MonoBehaviour
 {
     //assigned in inspector
     public Rigidbody rb;
@@ -42,12 +42,8 @@ public class Missile : NetworkBehaviour
         yield return new WaitForSeconds(.25f);
         sphereCollider.enabled = true;
     }
-
     private void OnTriggerEnter(Collider col)
     {
-        if (!IsServer)
-            return;
-
         //prioritize enemies over terrain by checking for them first
         if (col.CompareTag("Player"))
         {
@@ -55,9 +51,13 @@ public class Missile : NetworkBehaviour
             if (hitPlayer == immunePlayer)
                 return;
 
-            hitPlayer.TakeDamage();
-            if (immunePlayer != null)
-                immunePlayer.EarnPoints(100);
+            if (InstanceFinder.IsServer)
+            {
+                hitPlayer.TakeDamage();
+                if (immunePlayer != null)
+                    immunePlayer.EarnPoints(100);
+            }
+
             Explode();
         }
         else if (col.CompareTag("Turret"))
@@ -65,8 +65,12 @@ public class Missile : NetworkBehaviour
             if (immunePlayer == null)
                 return; //if a turret hit another turret
 
-            col.GetComponent<Turret>().Destroy();
-            immunePlayer.EarnPoints(30);
+            if (InstanceFinder.IsServer)
+            {
+                col.GetComponent<Turret>().ServerDestroy();
+                immunePlayer.EarnPoints(30);
+            }
+
             Explode();
         }
         else if (col.CompareTag("Terrain"))

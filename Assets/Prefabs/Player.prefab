@@ -338,11 +338,6 @@ MonoBehaviour:
   leftAnchor: {fileID: 5247589504194633931}
   rightAnchor: {fileID: 5247589504616100160}
   playerRenderer: {fileID: 5247589504468469482}
-  playerColors:
-  - {r: 1, g: 1, b: 0, a: 1}
-  - {r: 0, g: 1, b: 0, a: 1}
-  - {r: 1, g: 0, b: 1, a: 1}
-  - {r: 0, g: 1, b: 1, a: 1}
 --- !u!54 &5247589504468469460
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -376,6 +371,7 @@ MonoBehaviour:
   <PredictedSpawn>k__BackingField: {fileID: 0}
   _networkBehaviours:
   - {fileID: 5247589504468469462}
+  - {fileID: 5925376648152543819}
   <ParentNetworkObject>k__BackingField: {fileID: 0}
   <ChildNetworkObjects>k__BackingField: []
   _isNetworked: 1
@@ -385,7 +381,7 @@ MonoBehaviour:
   NetworkObserver: {fileID: 0}
   <PrefabId>k__BackingField: 0
   <SpawnableCollectionId>k__BackingField: 0
-  _scenePathHash: 2550129400
+  _scenePathHash: 0
   <SceneId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 7807759643866311769
   _sceneNetworkObjects:
@@ -406,9 +402,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2836e36774ca1c4bbbee976e17b649c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 255
+  _componentIndexCache: 1
   _addedNetworkObject: {fileID: 1896563657188803465}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: 1896563657188803465}
   _componentConfiguration: 0
   _synchronizeParent: 0
   _packing:

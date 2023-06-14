@@ -104,22 +104,34 @@ public class Turret : NetworkBehaviour
         }
     }
 
-    public void Destroy()
+    [Server]
+    public void ServerDestroy()
     {
-        canFire = false;
-        meshes.SetActive(false);
-        sphereCollider.enabled = false;
+        DestroyRespawn(false);
+        RpcClientDestroyRespawn(false);
 
-        StartCoroutine(Respawn());
+        StartCoroutine(ServerRespawn());
     }
-    private IEnumerator Respawn()
+    [Server]
+    private IEnumerator ServerRespawn()
     {
         yield return new WaitForSeconds(respawnTime);
 
-        canFire = true;
-        meshes.SetActive(true);
-        sphereCollider.enabled = true;
+        DestroyRespawn(true);
+        RpcClientDestroyRespawn(true);
 
         StartCoroutine(FireMissile());
+    }
+    [ObserversRpc]
+    private void RpcClientDestroyRespawn(bool respawn)
+    {
+        if (!IsServer)
+            DestroyRespawn(respawn);
+    }
+    private void DestroyRespawn(bool respawn) //true = respawn, false = destroy
+    {
+        canFire = respawn;
+        meshes.SetActive(respawn);
+        sphereCollider.enabled = respawn;
     }
 }

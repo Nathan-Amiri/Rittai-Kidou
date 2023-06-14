@@ -5,8 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using FishNet.Object;
 using System;
-using Unity.VisualScripting;
-using UnityEngine.SocialPlatforms;
+using FishNet.Object.Synchronizing;
 
 public class Player : NetworkBehaviour
 {
@@ -17,7 +16,7 @@ public class Player : NetworkBehaviour
     public LineRenderer rightLineRenderer;
     public GameObject leftAnchor;
     public GameObject rightAnchor;
-    public MeshRenderer playerRenderer; //accessed by setup
+    public MeshRenderer playerRenderer;
 
     //assigned by Setup:
     [NonSerialized] public Camera mainCamera;
@@ -38,6 +37,8 @@ public class Player : NetworkBehaviour
     [NonSerialized] public List<GameObject> hearts = new();
 
     //assigned dynamically:
+    [SyncVar]
+    private Color playerColor;
     private SpringJoint leftJoint;
     private SpringJoint rightJoint;
 
@@ -80,11 +81,15 @@ public class Player : NetworkBehaviour
     //peek
     private bool peeking;
 
-    //health
+    //health/scoring
+    [SyncVar]
     private int health = 5;
 
-    public void OnSpawn() //run by Setup
+    public void OnSpawn(Color newColor) //run by Setup
     {
+        if (IsServer)
+            playerColor = newColor;
+
         anchors.SetParent(null);
         anchors.position = Vector3.zero;
         anchors.localScale = Vector3.one;
@@ -93,6 +98,13 @@ public class Player : NetworkBehaviour
             mainCamera.transform.SetParent(transform);
             mainCamera.transform.SetPositionAndRotation(transform.position, transform.rotation);
         }
+    }
+    
+    private void OnDisable()
+    {
+        //anchors destroy when player disconnects
+        if (anchors != null)
+            Destroy(anchors.gameObject);
     }
 
     private void FixedUpdate()
@@ -109,6 +121,8 @@ public class Player : NetworkBehaviour
 
     private void Update()
     {
+        playerRenderer.material.color = playerColor;
+
         if (!IsOwner) return;
 
         RotateWithMouse();
@@ -315,8 +329,8 @@ public class Player : NetworkBehaviour
             peeking = false;
     }
 
-
-    public void TakeDamage()
+    [Server]
+    public void TakeDamage() //called by Missile
     {
         if (health <= 1)
         {
@@ -324,15 +338,29 @@ public class Player : NetworkBehaviour
             return;
         }
 
-        hearts[0].SetActive(false);
-        hearts.RemoveAt(0);
-        health -= 1;
+        ClientTakeDamage();
+        health -= 1; //health is a syncvar
+    }
+    [ObserversRpc]
+    private void ClientTakeDamage()
+    {
+        if (IsOwner)
+        {
+            hearts[0].SetActive(false);
+            hearts.RemoveAt(0);
+        }
     }
 
-    public void EarnPoints(int amount)
+    [Server]
+    public void EarnPoints(int amount) //called by Missile
     {
-        //NEEDS TO BE CHANGED LATER! Right now, collision happens everywhere. When it happens on server,
-        //this method will be called on the server, so playerNumber will always be the host!!
-        scoreTracker.ChangeScore(GameManager.playerNumber, amount, false);
+        //get playernumber from owner so that the correct score is changed
+        RpcEarnPoints(amount);
+    }
+    [ObserversRpc]
+    private void RpcEarnPoints(int amount)
+    {
+        if (IsOwner)
+            scoreTracker.RpcChangeScore(GameManager.playerNumber, amount, false);
     }
 }

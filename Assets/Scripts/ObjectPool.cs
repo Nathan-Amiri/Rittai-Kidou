@@ -4,21 +4,13 @@ using UnityEngine;
 
 public class ObjectPool : MonoBehaviour
 {
-    public static ObjectPool sharedInstance;
     private List<Missile> pooledMissiles;
 
-    private int amountToPool;
+    private int amountToPool = 50;
 
     //assigned in scene:
     public GameObject objectToPool;
     public Transform poolParent;
-
-    private void Awake()
-    {
-        sharedInstance = this;
-
-        amountToPool = 50;
-    }
 
     private void Start()
     {
@@ -40,6 +32,7 @@ public class ObjectPool : MonoBehaviour
             if (!pooledMissiles[i].gameObject.activeSelf)
                 return pooledMissiles[i];
         }
+        Debug.LogError("No available objects in pool");
         return default;
     }
 }
