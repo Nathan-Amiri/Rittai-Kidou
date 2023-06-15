@@ -5,42 +5,87 @@ using FishNet;
 using UnityEngine.UI;
 using System;
 using FishNet.Object;
+using TMPro;
 
 public class EscapeMenu : NetworkBehaviour
 {
-    public static bool paused;
+    public static bool paused { get; private set; }
     [NonSerialized] public int sensitivity;
 
     //assigned in scene
     public GameObject escapeCanvas;
     public Slider sensitivitySlider;
+    public TMP_Text pausedRespawnText;
 
-    //private bool eliminated;
+    private float respawnTimeRemaining;
+    private bool eliminated;
+
+    private void Start()
+    {
+        paused = true;
+    }
 
     private void Update()
     {
-        if (Input.GetButtonDown("EscapeMenu"))// && !eliminated)
-            escapeCanvas.SetActive(!escapeCanvas.activeSelf);
-
-        paused = escapeCanvas.activeSelf;
+        if (eliminated)
+        {
+            paused = true;
+            if (!escapeCanvas.activeSelf)
+                escapeCanvas.SetActive(true);
+        }
+        else if (Input.GetButtonDown("EscapeMenu"))
+        {
+            paused = !paused;
+            escapeCanvas.SetActive(paused);
+        }
 
         Cursor.lockState = paused ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = paused;
 
         sensitivity = (int)sensitivitySlider.value;
+
+        RespawnCooldown();
     }
 
-    //public void GameEnd()
-    //{
-    //    eliminated = true;
-    //    escapeCanvas.SetActive(true);
-    //}
-
-    public void LeaveMatch()
+    public void SelectLeaveMatch()
     {
         if (InstanceFinder.IsServer)
             InstanceFinder.ServerManager.StopConnection(false);
         else
             InstanceFinder.ClientManager.StopConnection();
+    }
+
+    public void EliminateRespawn(bool eliminate, float respawnTime, float networkDelay) //called by player
+    {
+        //if eliminate = false, respawn. respawnTime and networkDelay only used for respawn
+        if (eliminate)
+        {
+            eliminated = true;
+            StartRespawnCooldown(respawnTime, networkDelay);
+        }
+        else //if respawn, unpause
+        {
+            eliminated = false;
+            paused = !paused;
+            escapeCanvas.SetActive(paused);
+        }
+    }
+    private void StartRespawnCooldown(float respawnTime, float networkDelay)
+    {
+        //jump ahead in the cooldown timer based on networkDelay
+        respawnTimeRemaining = respawnTime - networkDelay;
+    }
+    private void RespawnCooldown() //run in update
+    {
+        if (respawnTimeRemaining > 0) //round up time remaining
+        {
+            respawnTimeRemaining -= Time.deltaTime;
+            pausedRespawnText.text = "Respawn in: " + Mathf.CeilToInt(respawnTimeRemaining).ToString();
+        }
+        else
+        {
+            respawnTimeRemaining = 0;
+            pausedRespawnText.text = "Paused";
+        }
     }
 }

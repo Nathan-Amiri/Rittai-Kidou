@@ -41,7 +41,14 @@ public class ScoreTracker : NetworkBehaviour
     }
 
     [ServerRpc (RequireOwnership = false)]
-    public void RpcChangeScore(int player, int amount, bool replace)
+    public void RpcHalveScore(int player) //called by Player
+    {
+        playerScores[player - 1] = Mathf.RoundToInt(playerScores[player - 1] / 2);
+        RpcClientChangeScore(playerScores);
+    }
+
+    [ServerRpc (RequireOwnership = false)]
+    public void RpcChangeScore(int player, int amount, bool replace) //called by Player
     {
         if (replace)
             playerScores[player - 1] = amount;

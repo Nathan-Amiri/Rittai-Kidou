@@ -22,26 +22,19 @@ public class Missile : MonoBehaviour
         immunePlayer = launcher; //if launched by turret, launcher is null
         isEnemy = newIsEnemy;
 
-        sphereCollider.enabled = false;
-
         transform.rotation = fireRotation;
         //do NOT use SetPositionAndRotation, rotation must change first
         transform.position = firePosition + (transform.forward * 10);
 
         gameObject.SetActive(true);
         rb.velocity = missileSpeed * transform.forward;
-        StartCoroutine(EnableTrigger());
 
         if (isEnemy)
             anim.SetTrigger("EnemyMissile");
         else
             anim.SetTrigger("Missile");
     }
-    private IEnumerator EnableTrigger()
-    {
-        yield return new WaitForSeconds(.25f);
-        sphereCollider.enabled = true;
-    }
+
     private void OnTriggerEnter(Collider col)
     {
         //prioritize enemies over terrain by checking for them first

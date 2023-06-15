@@ -11,6 +11,7 @@ public class Player : NetworkBehaviour
 {
     //assigned in prefab:
     public Rigidbody rb;
+    public SphereCollider col;
     public Transform anchors;
     public LineRenderer leftLineRenderer;
     public LineRenderer rightLineRenderer;
@@ -35,6 +36,7 @@ public class Player : NetworkBehaviour
     [NonSerialized] public ScoreTracker scoreTracker;
 
     [NonSerialized] public List<GameObject> hearts = new();
+    [NonSerialized] public List<Vector3> spawnPositions = new();
 
     //assigned dynamically:
     [SyncVar]
@@ -42,12 +44,14 @@ public class Player : NetworkBehaviour
     private SpringJoint leftJoint;
     private SpringJoint rightJoint;
 
+    private bool stunned;
+
     //custom gravity
-    private readonly float gravityScale = 1.5f;//3;
+    private readonly float gravityScale = 1.5f;
 
     //custom drag
-    private readonly float defaultDrag = .25f;//.5f;
-    private float drag; //dynamic
+    private readonly float defaultDrag = .25f;
+    private float drag = .25f; //dynamic
 
     //rotate player with mouse
     private readonly float mediumRotateSpeed = 8;
@@ -57,14 +61,14 @@ public class Player : NetworkBehaviour
     private readonly float raycastOffset = .23f;
 
     //tether
-    private readonly int maxTetherRange = 700;
+    private readonly int maxTetherRange = 500;
 
     //reel
     private bool leftReeling;
     private bool rightReeling;
-    private readonly float reelAmount = 50;//100;
+    private readonly float reelAmount = 50;
     //increase when reeling both tethers
-    private readonly float doubleReelAmount = 100;//200;
+    private readonly float doubleReelAmount = 100;
 
     //gas
     private readonly float gasBoost = 1.5f;//2;
@@ -72,7 +76,7 @@ public class Player : NetworkBehaviour
     private readonly float gasRefillSpeed = 8;
     private readonly float gasDrainSpeed = 4;
     //true when gas tap is successful:
-    private bool gasHoldAvailable;
+    private bool gasHoldAvailable = false;
 
     //missile
     private float missileAmount = 30; //max 30
@@ -81,9 +85,10 @@ public class Player : NetworkBehaviour
     //peek
     private bool peeking;
 
-    //health/scoring
+    //health/points/elimination
     [SyncVar]
     private int health = 5;
+    private readonly float respawnTime = 3;
 
     public void OnSpawn(Color newColor) //run by Setup
     {
@@ -97,6 +102,7 @@ public class Player : NetworkBehaviour
         {
             mainCamera.transform.SetParent(transform);
             mainCamera.transform.SetPositionAndRotation(transform.position, transform.rotation);
+            mainCamera.enabled = true;
         }
     }
     
@@ -109,7 +115,7 @@ public class Player : NetworkBehaviour
 
     private void FixedUpdate()
     {
-        if (!IsOwner) return;
+        if (!IsOwner || stunned) return;
 
         //custom gravity
         Vector3 gravity = -9.81f * gravityScale * Vector3.up;
@@ -123,7 +129,7 @@ public class Player : NetworkBehaviour
     {
         playerRenderer.material.color = playerColor;
 
-        if (!IsOwner) return;
+        if (!IsOwner || stunned) return;
 
         RotateWithMouse();
 
@@ -251,14 +257,6 @@ public class Player : NetworkBehaviour
         gasScaler.localScale = new Vector2(gasScaler.localScale.x, gasAmount / 30);
         gasAmountImage.color = gasAmount > 10 ? Color.white : Color.red;
 
-        //gas refill
-        gasHoldAvailable = false;
-        drag = defaultDrag;
-        if (gasAmount > 30)
-            gasAmount = 30;
-        else if (gasAmount < 30)
-            gasAmount += gasRefillSpeed * Time.deltaTime;
-
         if (EscapeMenu.paused)
             return;
 
@@ -278,11 +276,25 @@ public class Player : NetworkBehaviour
                 drag = 0;
                 gasAmount -= gasDrainSpeed * Time.deltaTime;
             }
-            else //gas freeze
+            else
+            {
                 drag = defaultDrag;
-
-            return;
+                gasAmount = 0;
+            }
+            return; //don't start refilling until gas button is released
         }
+
+        if (Input.GetButtonUp("Gas"))
+        {
+            gasHoldAvailable = false;
+            drag = defaultDrag;
+        }
+
+        //gas refill
+        if (gasAmount > 30)
+            gasAmount = 30;
+        else if (gasAmount < 30)
+            gasAmount += gasRefillSpeed * Time.deltaTime;
     }
     private IEnumerator GasDelay()
     {
@@ -314,8 +326,6 @@ public class Player : NetworkBehaviour
             };
             missileLauncher.Fire(info);
         }
-
-        //MissileTimer();
     }
 
     private void Peek() //run in update
@@ -329,13 +339,19 @@ public class Player : NetworkBehaviour
             peeking = false;
     }
 
+
+
+
+
     [Server]
     public void TakeDamage() //called by Missile
     {
-        if (health <= 1)
+        if (health <= 0) return;
+
+        if (health == 1)
         {
-            //escapeMenu.GameEnd();
-            return;
+            RpcHalvePoints();
+            Eliminate();
         }
 
         ClientTakeDamage();
@@ -344,11 +360,21 @@ public class Player : NetworkBehaviour
     [ObserversRpc]
     private void ClientTakeDamage()
     {
+        if (!IsOwner) return;
+
+        //turn off one heart
+        foreach (GameObject heart in hearts)
+            if (heart.activeSelf)
+            {
+                heart.SetActive(false);
+                return;
+            }
+    }
+    [ObserversRpc]
+    private void RpcHalvePoints()
+    {
         if (IsOwner)
-        {
-            hearts[0].SetActive(false);
-            hearts.RemoveAt(0);
-        }
+            scoreTracker.RpcHalveScore(GameManager.playerNumber);
     }
 
     [Server]
@@ -362,5 +388,79 @@ public class Player : NetworkBehaviour
     {
         if (IsOwner)
             scoreTracker.RpcChangeScore(GameManager.playerNumber, amount, false);
+    }
+
+
+
+    [Server]
+    private void Eliminate()
+    {
+        TurnPlayerOnOff(false);
+        RpcClientTurnPlayerOnOff(false);
+        StartCoroutine(RespawnCooldown());
+    }
+    [ObserversRpc]
+    private void RpcClientTurnPlayerOnOff(bool on)
+    {
+        if (!IsServer)
+            TurnPlayerOnOff(on);
+    }
+    //run on server and client
+    private void TurnPlayerOnOff(bool on)
+    {
+        playerRenderer.enabled = on;
+        col.enabled = on;
+
+        if (IsServer && on)
+            health = 5; //health is a syncvar
+
+        if (IsOwner)
+        {
+            //freeze rotation is default for player
+            rb.constraints = on ? RigidbodyConstraints.FreezeRotation : RigidbodyConstraints.FreezeAll;
+            stunned = !on;
+
+            if (on)
+            {
+                gasHoldAvailable = false;
+                drag = defaultDrag;
+                gasAmount = 30;
+                missileAmount = 30;
+
+                foreach (GameObject heart in hearts)
+                    heart.SetActive(true);
+
+                escapeMenu.EliminateRespawn(false, 0, 0);
+
+                int random = UnityEngine.Random.Range(0, spawnPositions.Count);
+                transform.position = spawnPositions[random];
+            }
+            else
+            {
+                leftLineRenderer.enabled = false;
+                rightLineRenderer.enabled = false;
+                if (leftJoint != null) Destroy(leftJoint);
+                if (rightJoint != null) Destroy(rightJoint);
+            }
+        }
+    }
+    [Server]
+    private IEnumerator RespawnCooldown()
+    {
+        RpcClientStartCooldown(TimeManager.Tick);
+        yield return new WaitForSeconds(respawnTime);
+        TurnPlayerOnOff(true);
+        RpcClientTurnPlayerOnOff(true);
+    }
+    [ObserversRpc]
+    private void RpcClientStartCooldown(uint tick)
+    {
+        if (!IsOwner) return;
+
+        float serverTime = (float)TimeManager.TicksToTime(tick);
+        float clientTime = (float)TimeManager.TicksToTime(TimeManager.Tick);
+        float timeDifference = Mathf.Abs(serverTime - clientTime);
+
+        escapeMenu.EliminateRespawn(true, respawnTime, timeDifference);
     }
 }

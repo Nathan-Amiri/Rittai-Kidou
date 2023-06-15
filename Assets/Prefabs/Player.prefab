@@ -332,12 +332,15 @@ MonoBehaviour:
   _addedNetworkObject: {fileID: 1896563657188803465}
   _networkObjectCache: {fileID: 1896563657188803465}
   rb: {fileID: 5247589504468469460}
+  col: {fileID: 5247589504468469483}
   anchors: {fileID: 5247589503888189047}
   leftLineRenderer: {fileID: 5247589504567022201}
   rightLineRenderer: {fileID: 5247589504375567049}
   leftAnchor: {fileID: 5247589504194633931}
   rightAnchor: {fileID: 5247589504616100160}
   playerRenderer: {fileID: 5247589504468469482}
+  playerColor: {r: 0, g: 0, b: 0, a: 0}
+  health: 5
 --- !u!54 &5247589504468469460
 Rigidbody:
   m_ObjectHideFlags: 0

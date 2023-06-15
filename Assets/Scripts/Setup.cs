@@ -28,8 +28,8 @@ public class Setup : NetworkBehaviour
     public ScoreTracker scoreTracker;
 
     public List<GameObject> hearts = new();
-
     public List<Color> playerColors = new();
+    public List<Vector3> spawnPositions = new();
 
     //assigned dynamically
     private GameManager gameManager;
@@ -47,9 +47,9 @@ public class Setup : NetworkBehaviour
     {
         gameManager = gm;
 
-        Vector3 temporarySpawnPosition = new(0, 10, 0);
+        Vector3 initialSpawnPosition = spawnPositions[GameManager.playerNumber - 1];
         Color playerColor = playerColors[GameManager.playerNumber - 1];
-        RpcSpawnPlayer(InstanceFinder.ClientManager.Connection, GameManager.playerNumber, temporarySpawnPosition, playerColor);
+        RpcSpawnPlayer(InstanceFinder.ClientManager.Connection, GameManager.playerNumber, initialSpawnPosition, playerColor);
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -81,6 +81,7 @@ public class Setup : NetworkBehaviour
         newPlayer.escapeMenu = escapeMenu;
         newPlayer.scoreTracker = scoreTracker;
         newPlayer.hearts = hearts;
+        newPlayer.spawnPositions = spawnPositions;
 
         newPlayer.OnSpawn(playerColor);
     }
