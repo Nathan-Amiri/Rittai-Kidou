@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using FishNet.Object;
 using System;
 using FishNet.Object.Synchronizing;
+using Unity.VisualScripting;
 
 public class Player : NetworkBehaviour
 {
@@ -129,6 +130,8 @@ public class Player : NetworkBehaviour
     {
         playerRenderer.material.color = playerColor;
 
+        EnemyTetherUpdate1();
+
         if (!IsOwner || stunned) return;
 
         RotateWithMouse();
@@ -159,13 +162,12 @@ public class Player : NetworkBehaviour
     //tether
     private void LaunchTether1() //run in update
     {
-        LaunchTether2(-1, leftCrosshair, "LeftTether", leftLineRenderer, leftAnchor);
-        LaunchTether2(1, rightCrosshair, "RightTether", rightLineRenderer, rightAnchor);
+        LaunchTether2(true, leftCrosshair, "LeftTether", leftLineRenderer, leftAnchor);
+        LaunchTether2(false, rightCrosshair, "RightTether", rightLineRenderer, rightAnchor);
     }
-    private void LaunchTether2(int posOrNeg, TMP_Text crosshair, string tetherInput, LineRenderer tetherRenderer, GameObject anchor)
+    private void LaunchTether2(bool isLeft, TMP_Text crosshair, string tetherInput, LineRenderer tetherRenderer, GameObject anchor)
     {
-        bool isLeft = posOrNeg == -1;
-        //else isRight, posOrNeg == 1;
+        int posOrNeg = isLeft ? -1 : 1;
 
         //get offset angles
         //used for raycast:
@@ -190,12 +192,15 @@ public class Player : NetworkBehaviour
 
                 tetherRenderer.enabled = true;
                 tetherRenderer.SetPosition(1, hit.point);
+                RpcChangeEnemyTethers(true, isLeft, hit.point);
             }
         }
 
         if (Input.GetButtonUp(tetherInput))
         {
             tetherRenderer.enabled = false;
+            RpcChangeEnemyTethers(false, isLeft, default);
+
             if (isLeft)
                 Destroy(leftJoint);
             else
@@ -249,6 +254,39 @@ public class Player : NetworkBehaviour
             rightJoint.spring = newReelAmount;
             rightJoint.maxDistance = distance - 10;
         }
+    }
+
+    //enemy tethers:
+    [ServerRpc]
+    private void RpcChangeEnemyTethers(bool on, bool isLeft, Vector3 anchorPoint)
+    {
+        RpcClientChangeEnemyTethers(on, isLeft, anchorPoint);
+    }
+    [ObserversRpc]
+    private void RpcClientChangeEnemyTethers(bool on, bool isLeft, Vector3 anchorPoint)
+    {
+        if (IsOwner) return;
+
+        LineRenderer tetherRenderer = isLeft ? leftLineRenderer : rightLineRenderer;
+        tetherRenderer.enabled = on;
+        if (on)
+            tetherRenderer.SetPosition(1, anchorPoint);
+    }
+    private void EnemyTetherUpdate1() //run in update
+    {
+        if (IsOwner) return;
+
+        EnemyTetherUpdate2(true, leftLineRenderer);
+        EnemyTetherUpdate2(false, rightLineRenderer);
+    }
+    private void EnemyTetherUpdate2(bool isLeft, LineRenderer tetherRenderer)
+    {
+        if (!tetherRenderer.enabled) return;
+
+        int posOrNeg = isLeft ? -1 : 1;
+        Vector3 startOffset = (1 * posOrNeg * transform.right) + (-1 * transform.up);
+
+        tetherRenderer.SetPosition(0, transform.position + startOffset);
     }
 
     //gas
@@ -441,6 +479,9 @@ public class Player : NetworkBehaviour
             {
                 leftLineRenderer.enabled = false;
                 rightLineRenderer.enabled = false;
+                RpcChangeEnemyTethers(false, true, default);
+                RpcChangeEnemyTethers(false, false, default);
+
                 if (leftJoint != null) Destroy(leftJoint);
                 if (rightJoint != null) Destroy(rightJoint);
 
