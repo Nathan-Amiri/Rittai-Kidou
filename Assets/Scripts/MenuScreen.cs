@@ -22,7 +22,7 @@ public class MenuScreen : MonoBehaviour
     //assigned in scene
     public Tugboat tugboat;
 
-    private bool peacefulGameMode = true;
+    private bool peacefulGameMode;
 
     private void OnEnable()
     {
@@ -37,12 +37,19 @@ public class MenuScreen : MonoBehaviour
     {
         if (PlayerPrefs.HasKey("Username"))
             usernameField.text = PlayerPrefs.GetString("Username");
+
+        if (PlayerPrefs.HasKey("GameMode"))
+            peacefulGameMode = PlayerPrefs.GetInt("GameMode") == 0; //0 = peaceful, 1 = battle
+        else
+            peacefulGameMode = true; //peaceful is default
     }
 
     private void Update()
     {
         startLobby.interactable = !usernamePlaceHolder.enabled;
         joinLobby.interactable = !ipPlaceHolder.enabled && !usernamePlaceHolder.enabled;
+
+        modeText.text = "Mode: " + (peacefulGameMode ? "Peaceful" : "Battle");
     }
 
     private void OnClientConnectOrLoad(GameManager gm)
@@ -60,7 +67,7 @@ public class MenuScreen : MonoBehaviour
     public void SelectChangeMode()
     {
         peacefulGameMode = !peacefulGameMode;
-        modeText.text = "Mode: " + (peacefulGameMode ? "Peaceful" : "Battle");
+        PlayerPrefs.SetInt("GameMode", peacefulGameMode ? 0 : 1);
     }
 
     public void SelectStartLobby()
