@@ -6,7 +6,7 @@ public class ObjectPool : MonoBehaviour
 {
     private List<Missile> pooledMissiles;
 
-    private int amountToPool = 50;
+    private readonly int amountToPool = 50;
 
     //assigned in scene:
     public GameObject objectToPool;

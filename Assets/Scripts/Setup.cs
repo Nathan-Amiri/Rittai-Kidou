@@ -56,6 +56,7 @@ public class Setup : NetworkBehaviour
     private void RpcSpawnPlayer(NetworkConnection conn, int newPlayerNumber, Vector3 newPlayerPosition, Color playerColor)
     {
         GameObject newPlayerObject = Instantiate(playerPref, newPlayerPosition, Quaternion.identity);
+        newPlayerObject.transform.LookAt(new Vector3(0, newPlayerPosition.y, 0));
 
         //rigidbody only needs to be added on the server
         gameManager.playerRbs[newPlayerNumber - 1] = newPlayerObject.GetComponent<Rigidbody>();

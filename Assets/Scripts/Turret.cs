@@ -20,6 +20,7 @@ public class Turret : NetworkBehaviour
     private readonly float fireRate = 3;
 
     private bool canFire = true;
+    private bool lockedOnTarget; //false playerRb not loaded by Setup yet or all players eliminated
     private readonly float respawnTime = 20;
 
     private GameManager gameManager;
@@ -57,16 +58,22 @@ public class Turret : NetworkBehaviour
         foreach (Rigidbody rb in gameManager.playerRbs)
         {
             if (rb == null) continue;
+            if (rb.transform.position.y <= -900) continue; //if player is eliminated
 
             float newDistance = Vector3.Distance(transform.position, rb.transform.position);
             if (shortestDistance == 0 || newDistance < shortestDistance)
             {
                 shortestDistance = newDistance;
                 playerRb = rb;
+                lockedOnTarget = true;
             }
         }
+
         if (playerRb == null)
-            return; //playerRb not loaded by Setup yet
+        {
+            lockedOnTarget = false;
+            return;
+        }
 
         playerPosition = playerRb.transform.position;
         playerMoveDirection = playerRb.velocity.normalized;
@@ -92,13 +99,15 @@ public class Turret : NetworkBehaviour
 
         while (canFire)
         {
+
             MissileInfo info = new()
             {
                 firePosition = transform.position,
                 fireRotation = transform.rotation,
                 launcher = null
             };
-            missileLauncher.Fire(info);
+            if (lockedOnTarget)
+                missileLauncher.Fire(info);
 
             yield return new WaitForSeconds(fireRate);
         }

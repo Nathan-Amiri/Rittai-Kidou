@@ -134,7 +134,6 @@ public class Player : NetworkBehaviour
         RotateWithMouse();
 
         LaunchTether1();
-
         ReelTether();
 
         Gas();
@@ -144,6 +143,7 @@ public class Player : NetworkBehaviour
         Peek();
     }
 
+    //mouse rotate
     private void RotateWithMouse() //run in update
     {
         if (EscapeMenu.paused || peeking) return;
@@ -156,6 +156,7 @@ public class Player : NetworkBehaviour
         transform.Rotate(-pitch, 0, 0, Space.Self);
     }
 
+    //tether
     private void LaunchTether1() //run in update
     {
         LaunchTether2(-1, leftCrosshair, "LeftTether", leftLineRenderer, leftAnchor);
@@ -227,7 +228,6 @@ public class Player : NetworkBehaviour
         joint.connectedBody = rb;
         return joint;
     }
-
     private void ReelTether() //run in update
     {
         if (EscapeMenu.paused) return;
@@ -251,6 +251,7 @@ public class Player : NetworkBehaviour
         }
     }
 
+    //gas
     private void Gas() //run in update
     {
         //update meter
@@ -302,6 +303,7 @@ public class Player : NetworkBehaviour
         rb.velocity *= gasBoost;
     }
 
+    //missile
     private void Missile() //run in update
     {
         //update meter
@@ -328,6 +330,7 @@ public class Player : NetworkBehaviour
         }
     }
 
+    //peek
     private void Peek() //run in update
     {
         if (Input.GetButton("Peek") && rb.velocity != Vector3.zero)
@@ -342,7 +345,7 @@ public class Player : NetworkBehaviour
 
 
 
-
+    //health/points
     [Server]
     public void TakeDamage() //called by Missile
     {
@@ -391,7 +394,7 @@ public class Player : NetworkBehaviour
     }
 
 
-
+    //eliminate/respawn
     [Server]
     private void Eliminate()
     {
@@ -408,9 +411,6 @@ public class Player : NetworkBehaviour
     //run on server and client
     private void TurnPlayerOnOff(bool on)
     {
-        playerRenderer.enabled = on;
-        col.enabled = on;
-
         if (IsServer && on)
             health = 5; //health is a syncvar
 
@@ -434,6 +434,8 @@ public class Player : NetworkBehaviour
 
                 int random = UnityEngine.Random.Range(0, spawnPositions.Count);
                 transform.position = spawnPositions[random];
+                transform.LookAt(new Vector3(0, transform.position.y, 0));
+                mainCamera.transform.SetPositionAndRotation(transform.position, transform.rotation);
             }
             else
             {
@@ -441,6 +443,10 @@ public class Player : NetworkBehaviour
                 rightLineRenderer.enabled = false;
                 if (leftJoint != null) Destroy(leftJoint);
                 if (rightJoint != null) Destroy(rightJoint);
+
+                Vector3 cachedCameraPosition = mainCamera.transform.position; //must be world, not local
+                transform.position = new Vector3(0, -1000, 0); //turrets don't fire if y position is below -900
+                mainCamera.transform.position = cachedCameraPosition;
             }
         }
     }
