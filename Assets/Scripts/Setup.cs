@@ -48,7 +48,6 @@ public class Setup : NetworkBehaviour
         gameManager = gm;
 
         Vector3 initialSpawnPosition = spawnPositions[GameManager.playerNumber - 1];
-        initialSpawnPosition = new Vector3(0, 5, 0);
         Color playerColor = playerColors[GameManager.playerNumber - 1];
         RpcSpawnPlayer(InstanceFinder.ClientManager.Connection, GameManager.playerNumber, initialSpawnPosition, playerColor);
     }
