@@ -55,7 +55,7 @@ public class Player : NetworkBehaviour
     private float drag = .25f; //dynamic
 
     //rotate player with mouse
-    private readonly float mediumRotateSpeed = 8;
+    private readonly float mediumRotateSpeed = 7;
     private readonly float sensitivityChangeAmount = 1.5f;
 
     //fires raycast through crosshairs

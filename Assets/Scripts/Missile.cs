@@ -10,6 +10,7 @@ public class Missile : MonoBehaviour
     public Rigidbody rb;
     public Animator anim;
     public SphereCollider sphereCollider;
+    public TrailRenderer trailRenderer;
 
     [NonSerialized] public readonly float missileSpeed = 400; //read by missilelauncher
 
@@ -29,10 +30,12 @@ public class Missile : MonoBehaviour
         gameObject.SetActive(true);
         rb.velocity = missileSpeed * transform.forward;
 
-        if (isEnemy)
-            anim.SetTrigger("EnemyMissile");
-        else
-            anim.SetTrigger("Missile");
+        string animTrigger = isEnemy ? "EnemyMissile" : "Missile";
+        anim.SetTrigger(animTrigger);
+
+        Color trailColor = isEnemy ? Color.red : Color.blue;
+        trailRenderer.startColor = trailColor;
+        trailRenderer.endColor = trailColor;
     }
 
     private void OnTriggerEnter(Collider col)

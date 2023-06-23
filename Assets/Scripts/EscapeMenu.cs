@@ -22,6 +22,9 @@ public class EscapeMenu : NetworkBehaviour
 
     private void Start()
     {
+        if (PlayerPrefs.HasKey("Sensitivity"))
+            sensitivitySlider.value = PlayerPrefs.GetInt("Sensitivity");
+
         paused = true;
     }
 
@@ -42,7 +45,11 @@ public class EscapeMenu : NetworkBehaviour
         Cursor.lockState = paused ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = paused;
 
-        sensitivity = (int)sensitivitySlider.value;
+        if (sensitivity != (int)sensitivitySlider.value)
+        {
+            sensitivity = (int)sensitivitySlider.value;
+            PlayerPrefs.SetInt("Sensitivity", sensitivity);
+        }
 
         RespawnCooldown();
     }
