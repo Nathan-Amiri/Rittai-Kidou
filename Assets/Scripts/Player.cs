@@ -72,7 +72,7 @@ public class Player : NetworkBehaviour
     private readonly float doubleReelAmount = 100;
 
     //gas
-    private readonly float gasBoost = 1.5f;//2;
+    private readonly float gasBoost = 1.5f; //multiplied by current velocity
     private float gasAmount = 30; //max 30
     private readonly float gasRefillSpeed = 8;
     private readonly float gasDrainSpeed = 4;
@@ -85,6 +85,9 @@ public class Player : NetworkBehaviour
 
     //peek
     private bool peeking;
+
+    //speed boost
+    private readonly float speedBoostAmount = 100;
 
     //health/points/elimination
     [SyncVar]
@@ -380,6 +383,13 @@ public class Player : NetworkBehaviour
             peeking = false;
     }
 
+    //speed boost
+    public void SpeedBoost() //called by SpeedBoost
+    {
+        if (!IsOwner) return;
+
+        rb.velocity += rb.velocity.normalized * speedBoostAmount;
+    }
 
 
 
