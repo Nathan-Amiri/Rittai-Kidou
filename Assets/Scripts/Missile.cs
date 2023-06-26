@@ -17,6 +17,9 @@ public class Missile : MonoBehaviour
     private Player immunePlayer;
     private bool isEnemy;
 
+    public delegate void ScreenShakeAction(Vector3 explodePosition);
+    public static event ScreenShakeAction ScreenShake;
+
     //only called by missilelauncher, run on client and server
     public void Launch(bool newIsEnemy, Player launcher, Vector3 firePosition, Quaternion fireRotation)
     {
@@ -83,11 +86,13 @@ public class Missile : MonoBehaviour
         else
             anim.SetTrigger("Explosion");
 
+        ScreenShake?.Invoke(transform.position);
+
         StartCoroutine(EndExplosion());
     }
     private IEnumerator EndExplosion()
     {
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(1); //explosion animations are 1 second long
         gameObject.SetActive(false);
     }
 }
