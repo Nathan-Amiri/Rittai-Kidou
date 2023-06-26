@@ -134,7 +134,6 @@ MonoBehaviour:
   anim: {fileID: 842717901}
   sphereCollider: {fileID: 5774222912373092821}
   trailRenderer: {fileID: 3878801206390463607}
-  blueColor: {r: 0.16981131, g: 0.2971698, b: 0.4245283, a: 1}
 --- !u!95 &842717901
 Animator:
   serializedVersion: 5
@@ -198,7 +197,7 @@ TrailRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Time: 1
+  m_Time: 0.75
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 1

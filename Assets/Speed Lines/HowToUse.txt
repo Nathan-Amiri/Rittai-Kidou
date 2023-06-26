@@ -1,0 +1,40 @@
+Just drop the Speed Lines prefab in your scene, set it's properties to the desired values, and you're good to go.
+
+
+Note that smooth camera movement plays a huge factor in the quality of this effect. If the camera doesn't update it's movement every frame for example, this can result in a jittery effect, where the lines disapear and reapear all the time.
+If you move the camera by applying forces to a rigidbody attached to the camera, make sure the "Interpolate"-property is set to avoid this issue.
+
+The Demo scene requires the Active Input Handling (in Project Settings > Player > Other Settings) be set to either "Input Manager (Old)" or "Both" for the movement there to work. But this is only for the demo scene, and not necessary to use the Speed Lines in your own project.
+
+
+Properties:
+
+Camera: 
+You can assign the camera here, if nothing is assigned, it will automatically assign the camera tagged as the "MainCamera". So in most cases you can leave this open if you like.
+
+Min Speed: 
+The minimum speed for the lines to appear.
+
+Spawn Distance: 
+The maximum distance from the camera the lines appear. Default is 10 and this works well for normal sized characters and vehicles.
+
+Margin: 
+Margin for the spawn distance, to avoid unnecessary particle movement. (keep this small, somewhere around 1/10th of the Spawn Distance)
+
+Position Update Delay: 
+Delay between updating based on camera velocity, in order to remove possible jitter there might be in the camera movement. Keep this small, as the bigger this value is, the more delay there is in the effect. Only increase it when you have very jittery camera movement.
+
+Update At Runtime: 
+Toggle to make the Lines-properties update every frame at runtime. Leave this off if you don't adjust the values at runtime.
+
+Lines Size: 
+Size of the Lines-particles
+
+Lines Color1 and Color2: 
+The lines will randomly have either color.
+
+Lines Count:
+The amount of lines
+
+Lines Stretching:
+Determines the length of the lines. This value is multiplied by the camera's speed, so the desired value depends on how fast your camera can move. For example, if the camera moves at 40 units per second, and the Lines Stretching is set to 0.1, the lines will be 4 units long. (40 x 0.1 = 4)

@@ -87,7 +87,7 @@ public class Player : NetworkBehaviour
     private bool peeking;
 
     //speed boost
-    private readonly float speedBoostAmount = 100;
+    private readonly float speedBoostAmount = 150;
 
     //health/points/elimination
     [SyncVar]
