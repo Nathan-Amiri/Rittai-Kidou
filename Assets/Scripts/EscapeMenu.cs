@@ -15,6 +15,7 @@ public class EscapeMenu : NetworkBehaviour
     //assigned in scene
     public GameObject escapeCanvas;
     public Slider sensitivitySlider;
+    public Slider volumeSlider;
     public TMP_Text pausedRespawnText;
 
     private float respawnTimeRemaining;
@@ -24,6 +25,9 @@ public class EscapeMenu : NetworkBehaviour
     {
         if (PlayerPrefs.HasKey("Sensitivity"))
             sensitivitySlider.value = PlayerPrefs.GetInt("Sensitivity");
+
+        if (PlayerPrefs.HasKey("Volume"))
+            volumeSlider.value = PlayerPrefs.GetInt("Volume");
 
         paused = true;
     }
@@ -49,6 +53,13 @@ public class EscapeMenu : NetworkBehaviour
         {
             sensitivity = (int)sensitivitySlider.value;
             PlayerPrefs.SetInt("Sensitivity", sensitivity);
+        }
+
+        if (AudioListener.volume != (int)volumeSlider.value)
+        {
+            //volume increases as slider value approaches its max value (8)
+            AudioListener.volume = volumeSlider.value / 8;
+            PlayerPrefs.SetInt("Volume", (int)volumeSlider.value);
         }
 
         RespawnCooldown();

@@ -11,14 +11,17 @@ public class Missile : MonoBehaviour
     public Animator anim;
     public SphereCollider sphereCollider;
     public TrailRenderer trailRenderer;
+    public AudioSource audioSource;
+    public AudioClip launchClip;
+    public AudioClip explodeClip;
 
     [NonSerialized] public readonly float missileSpeed = 400; //read by missilelauncher
 
     private Player immunePlayer;
     private bool isEnemy;
 
-    public delegate void ScreenShakeAction(Vector3 explodePosition);
-    public static event ScreenShakeAction ScreenShake;
+    //public delegate void ScreenShakeAction(Vector3 explodePosition);
+    //public static event ScreenShakeAction ScreenShake;
 
     //only called by missilelauncher, run on client and server
     public void Launch(bool newIsEnemy, Player launcher, Vector3 firePosition, Quaternion fireRotation)
@@ -39,6 +42,8 @@ public class Missile : MonoBehaviour
         Color trailColor = isEnemy ? Color.red : Color.blue;
         trailRenderer.startColor = trailColor;
         trailRenderer.endColor = trailColor;
+
+        audioSource.PlayOneShot(launchClip);
     }
 
     private void OnTriggerEnter(Collider col)
@@ -74,7 +79,6 @@ public class Missile : MonoBehaviour
         }
         else if (col.CompareTag("Terrain"))
             Explode();
-
     }
 
     private void Explode()
@@ -86,7 +90,9 @@ public class Missile : MonoBehaviour
         else
             anim.SetTrigger("Explosion");
 
-        ScreenShake?.Invoke(transform.position);
+        //ScreenShake?.Invoke(transform.position);
+
+        audioSource.PlayOneShot(explodeClip);
 
         StartCoroutine(EndExplosion());
     }

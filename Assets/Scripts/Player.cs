@@ -6,7 +6,6 @@ using UnityEngine.UI;
 using FishNet.Object;
 using System;
 using FishNet.Object.Synchronizing;
-using Unity.VisualScripting;
 
 public class Player : NetworkBehaviour
 {
@@ -19,6 +18,7 @@ public class Player : NetworkBehaviour
     public GameObject leftAnchor;
     public GameObject rightAnchor;
     public MeshRenderer playerRenderer;
+    public PlayerAudio playerAudio;
 
     //assigned by Setup:
     [NonSerialized] public Camera mainCamera;
@@ -196,10 +196,12 @@ public class Player : NetworkBehaviour
                 tetherRenderer.enabled = true;
                 tetherRenderer.SetPosition(1, hit.point);
                 RpcChangeEnemyTethers(true, isLeft, hit.point);
+
+                playerAudio.PlaySoundEffect("Fire");
             }
         }
 
-        if (Input.GetButtonUp(tetherInput))
+        if (Input.GetButtonUp(tetherInput) && tetherRenderer.enabled == true)
         {
             tetherRenderer.enabled = false;
             RpcChangeEnemyTethers(false, isLeft, default);
@@ -208,6 +210,8 @@ public class Player : NetworkBehaviour
                 Destroy(leftJoint);
             else
                 Destroy(rightJoint);
+
+            playerAudio.PlaySoundEffect("Release");
         }
 
         if (tetherRenderer.enabled)
@@ -240,8 +244,16 @@ public class Player : NetworkBehaviour
     {
         if (EscapeMenu.paused) return;
 
+        bool wasReeling = leftReeling || rightReeling;
+
         leftReeling = Input.GetButton("LeftReel") & leftJoint != null;
         rightReeling = Input.GetButton("RightReel") & rightJoint != null;
+
+        bool currentlyReeling = leftReeling || rightReeling;
+        if (!wasReeling && currentlyReeling)
+            playerAudio.PlaySoundEffect("StartReel");
+        else if (wasReeling && !currentlyReeling)
+            playerAudio.PlaySoundEffect("EndReel");
 
         float newReelAmount = leftReeling && rightReeling ? doubleReelAmount : reelAmount;
 
@@ -308,6 +320,8 @@ public class Player : NetworkBehaviour
             gasAmount -= 10;
             gasHoldAvailable = true;
             StartCoroutine(GasDelay());
+
+            playerAudio.PlaySoundEffect("Gas");
         }
 
         if (Input.GetButton("Gas") && gasHoldAvailable)
@@ -322,6 +336,8 @@ public class Player : NetworkBehaviour
             {
                 drag = defaultDrag;
                 gasAmount = 0;
+
+                playerAudio.PlaySoundEffect("GasEnd");
             }
             return; //don't start refilling until gas button is released
         }
@@ -330,6 +346,8 @@ public class Player : NetworkBehaviour
         {
             gasHoldAvailable = false;
             drag = defaultDrag;
+
+            playerAudio.PlaySoundEffect("GasEnd");
         }
 
         //gas refill
@@ -340,7 +358,7 @@ public class Player : NetworkBehaviour
     }
     private IEnumerator GasDelay()
     {
-        yield return new WaitForSeconds(.8f);
+        yield return new WaitForSeconds(.45f);
         rb.velocity *= gasBoost;
     }
 
@@ -389,6 +407,15 @@ public class Player : NetworkBehaviour
         if (!IsOwner) return;
 
         rb.velocity += rb.velocity.normalized * speedBoostAmount;
+
+        playerAudio.PlaySoundEffect("Boost");
+    }
+
+    //collision
+    private void OnCollisionEnter(Collision col)
+    {
+        if (col.gameObject.CompareTag("Terrain"))
+            playerAudio.PlaySoundEffect("Slam");
     }
 
 
