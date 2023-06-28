@@ -43,7 +43,9 @@ public class Missile : MonoBehaviour
         trailRenderer.startColor = trailColor;
         trailRenderer.endColor = trailColor;
 
-        audioSource.PlayOneShot(launchClip);
+        //when player fires missile, launch sound is delayed from unity due to unity bug, so playerAudio plays it instead
+        if (launcher == null || !launcher.IsOwner)
+            audioSource.PlayOneShot(launchClip);
     }
 
     private void OnTriggerEnter(Collider col)

@@ -386,6 +386,8 @@ public class Player : NetworkBehaviour
                 launcher = this
             };
             missileLauncher.Fire(info);
+
+            playerAudio.PlaySoundEffect("Launch");
         }
     }
 
@@ -473,6 +475,8 @@ public class Player : NetworkBehaviour
     [Server]
     private void Eliminate()
     {
+        playerAudio.PlaySoundEffect("Stop");
+
         TurnPlayerOnOff(false);
         RpcClientTurnPlayerOnOff(false);
         StartCoroutine(RespawnCooldown());
