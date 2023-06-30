@@ -223,6 +223,8 @@ public class GameManager : NetworkBehaviour
 
     [NonSerialized] public bool peacefulGameMode; //false = battle game mode
 
+    [NonSerialized] public string roomName;
+
     [SyncObject]
     public readonly SyncList<string> connectedPlayers = new(); //used by ScoreTracker
     private void InitializeConnectedPlayers() //run in awake

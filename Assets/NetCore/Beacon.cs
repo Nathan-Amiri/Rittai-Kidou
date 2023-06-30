@@ -32,10 +32,10 @@ public class Beacon : NetworkBehaviour //spawns a gamemanager in a scene and, on
         Signal?.Invoke();
     }
 
-    public override void OnStartServer() //ensures that ServerManager.StartConnection will always create a host
-    {
-        base.OnStartServer();
-        if (!IsClient)
-            ClientManager.StartConnection();
-    }
+    //public override void OnStartServer() //ensures that ServerManager.StartConnection will always create a host
+    //{
+    //    base.OnStartServer();
+    //    if (!IsClient)
+    //        ClientManager.StartConnection();
+    //}
 }

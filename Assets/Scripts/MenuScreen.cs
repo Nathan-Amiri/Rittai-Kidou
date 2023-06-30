@@ -1,5 +1,5 @@
 using FishNet;
-using FishNet.Transporting.Tugboat;
+using FishyRealtime;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -13,16 +13,20 @@ public class MenuScreen : MonoBehaviour
     public TextMeshProUGUI usernamePlaceHolder;
     public TMP_Text modeText;
     public Button startLobby;
-    public TMP_InputField ipAddressField;
-    public TextMeshProUGUI ipPlaceHolder;
+    public TMP_InputField roomNameField;
+    public TextMeshProUGUI roomNamePlaceholder;
     public Button joinLobby;
     public TMP_Dropdown resolutionDropdown;
     public TMP_Text errorText;
 
     //assigned in scene
-    public Tugboat tugboat;
+    public FishyRealtime.FishyRealtime transport;
 
-    private bool peacefulGameMode;
+    private string currentGameMode;
+    private int gameModeInt;
+    private readonly string[] gameModeIndex = new string[3];
+
+    private string roomName;
 
     private void OnEnable()
     {
@@ -35,26 +39,48 @@ public class MenuScreen : MonoBehaviour
 
     private void Start()
     {
+        gameModeIndex[0] = "Peaceful";
+        gameModeIndex[1] = "Battle";
+        gameModeIndex[2] = "Random";
+
+        if (PlayerPrefs.HasKey("GameMode"))
+            gameModeInt = PlayerPrefs.GetInt("GameMode");
+        else
+            gameModeInt = 0; //peaceful is default
+        currentGameMode = gameModeIndex[gameModeInt];
+
         if (PlayerPrefs.HasKey("Username"))
             usernameField.text = PlayerPrefs.GetString("Username");
 
-        if (PlayerPrefs.HasKey("GameMode"))
-            peacefulGameMode = PlayerPrefs.GetInt("GameMode") == 0; //0 = peaceful, 1 = battle
-        else
-            peacefulGameMode = true; //peaceful is default
+        if (PlayerPrefs.HasKey("RoomName"))
+            roomNameField.text = PlayerPrefs.GetString("RoomName");
+
+        if (PlayerPrefs.HasKey("Resolution"))
+            resolutionDropdown.value = PlayerPrefs.GetInt("Resolution");
     }
 
     private void Update()
     {
-        startLobby.interactable = !usernamePlaceHolder.enabled;
-        joinLobby.interactable = !ipPlaceHolder.enabled && !usernamePlaceHolder.enabled;
+        modeText.text = "Game Mode: " + currentGameMode;
 
-        modeText.text = "Mode: " + (peacefulGameMode ? "Peaceful" : "Battle");
+        if (roomNameField.text != roomName)
+        {
+            roomName = roomNameField.text;
+            PlayerPrefs.SetString("RoomName", roomName);
+        }
     }
 
     private void OnClientConnectOrLoad(GameManager gm)
     {
-        gm.peacefulGameMode = peacefulGameMode;
+        bool peaceful;
+        if (currentGameMode == "Random")
+            peaceful = Random.Range(0, 2) == 0;
+        else
+            peaceful = currentGameMode == "Peaceful";
+
+        gm.roomName = roomName;
+
+        gm.peacefulGameMode = peaceful;
         if (InstanceFinder.IsHost)
             gm.RequestSceneChange("GameScene");
     }
@@ -64,21 +90,78 @@ public class MenuScreen : MonoBehaviour
         PlayerPrefs.SetString("Username", usernameField.text);
     }
 
+    private void UsernameError()
+    {
+        errorText.text = "Must choose a username!";
+    }
+
+    public void SelectQuickMatch()
+    {
+        if (usernamePlaceHolder.enabled)
+        {
+            UsernameError();
+            return;
+        }
+
+
+    }
+
+    public void SelectCreatePrivateRoom()
+    {
+        if (usernamePlaceHolder.enabled)
+        {
+            UsernameError();
+            return;
+        }
+        if (currentGameMode == "Random")
+        {
+            errorText.text = "Must specify a game mode for your private room!";
+            return;
+        }
+        if (roomNamePlaceholder.enabled)
+        {
+            errorText.text = "Must choose a name for your private room!";
+            return;
+        }
+
+        FishyRealtime.Room info = new()
+        {
+            name = roomName.ToLower(),
+            maxPlayers = 3,
+            isPublic = false,
+            open = true
+        };
+        RoomFilter filter = new()
+        {
+            gameMode = currentGameMode
+        };
+
+        transport.CreateRoom(info, filter);
+    }
+
+    public void SelectJoinPrivateRoom()
+    {
+        if (usernamePlaceHolder.enabled)
+        {
+            UsernameError();
+            return;
+        }
+        if (roomNamePlaceholder.enabled)
+        {
+            errorText.text = "Must provide the name of the private room you'd like to join!";
+            return;
+        }
+    }
+
     public void SelectChangeMode()
     {
-        peacefulGameMode = !peacefulGameMode;
-        PlayerPrefs.SetInt("GameMode", peacefulGameMode ? 0 : 1);
-    }
+        gameModeInt++;
+        if (gameModeInt > 2)
+            gameModeInt = 0;
 
-    public void SelectStartLobby()
-    {
-        InstanceFinder.ServerManager.StartConnection();
-    }
+        currentGameMode = gameModeIndex[gameModeInt];
 
-    public void SelectJoinLobby()
-    {
-        tugboat.SetClientAddress(ipAddressField.text);
-        InstanceFinder.ClientManager.StartConnection();
+        PlayerPrefs.SetInt("GameMode", gameModeInt);
     }
 
     public void SelectExitGame()
@@ -103,5 +186,6 @@ public class MenuScreen : MonoBehaviour
                 Screen.SetResolution(1600, 900, true);
                 break;
         }
+        PlayerPrefs.SetInt("Resolution", resolutionDropdown.value);
     }
 }

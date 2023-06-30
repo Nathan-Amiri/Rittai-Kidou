@@ -21,7 +21,7 @@ public class ObjectPool : MonoBehaviour
             tmp = Instantiate(objectToPool, poolParent);
             tmp.SetActive(false);
             Missile missile = tmp.GetComponent<Missile>();
-            pooledMissiles.Add(missile);
+            pooledMissiles.Add(missile);                
         }
     }
 
