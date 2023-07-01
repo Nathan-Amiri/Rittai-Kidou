@@ -621,7 +621,7 @@ GameObject:
   - component: {fileID: 4844230331201510912}
   - component: {fileID: 339829904974922618}
   m_Layer: 5
-  m_Name: ResDropdown
+  m_Name: RegDropdown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -747,9 +747,9 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SimpleManager, Assembly-CSharp
-        m_MethodName: SelectNewResolution
+      - m_Target: {fileID: 3544808942891220869}
+        m_TargetAssemblyTypeName: MenuScreen, Assembly-CSharp
+        m_MethodName: SelectNewRegion
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1675,7 +1675,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8329025843177884815
 Transform:
   m_ObjectHideFlags: 0
@@ -2555,7 +2555,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -250}
+  m_AnchoredPosition: {x: 0, y: -248.14}
   m_SizeDelta: {x: 750, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5848187444550399947
@@ -3085,11 +3085,13 @@ MonoBehaviour:
   usernameField: {fileID: 901263477}
   usernamePlaceHolder: {fileID: 237083748}
   modeText: {fileID: 6036592505738403092}
-  startLobby: {fileID: 103383260387644733}
   roomNameField: {fileID: 8291413839829487497}
   roomNamePlaceholder: {fileID: 1245324790598103409}
-  joinLobby: {fileID: 3342744676813195912}
+  quickMatch: {fileID: 103383260387644733}
+  createRoom: {fileID: 3697478948033929226}
+  joinRoom: {fileID: 3342744676813195912}
   resolutionDropdown: {fileID: 6317317032319910323}
+  regionDropdown: {fileID: 339829904974922618}
   errorText: {fileID: 7661487830366607861}
   transport: {fileID: 0}
 --- !u!114 &3544808942891220866
@@ -3117,7 +3119,7 @@ MonoBehaviour:
   NetworkObserver: {fileID: 0}
   <PrefabId>k__BackingField: 10
   <SpawnableCollectionId>k__BackingField: 0
-  _scenePathHash: 0
+  _scenePathHash: 1565888657
   <SceneId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 12624607037100984109
   _sceneNetworkObjects:
@@ -3182,14 +3184,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.2901517, b: 0.6415094, a: 1}
+  m_Color: {r: 0.3962264, g: 0.3962264, b: 0.3962264, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: f52b305e74cc2d447a743a10f4e0cb26, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -3211,7 +3213,7 @@ GameObject:
   - component: {fileID: 224478447834525107}
   - component: {fileID: 5919947305020651360}
   m_Layer: 0
-  m_Name: ResText
+  m_Name: RegText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4095,8 +4097,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 47.5, y: 0}
-  m_SizeDelta: {x: -95, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3668407516333575457
 CanvasRenderer:
@@ -4126,7 +4128,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Mode: Peaceful'
+  m_text: 'Game Mode: Peaceful'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -4160,7 +4162,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -5245,7 +5247,7 @@ GameObject:
   - component: {fileID: 1674432050337547759}
   - component: {fileID: 2616137550538646814}
   m_Layer: 0
-  m_Name: ResBack
+  m_Name: RegBack
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5450,8 +5452,8 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SimpleManager, Assembly-CSharp
+      - m_Target: {fileID: 3544808942891220869}
+        m_TargetAssemblyTypeName: MenuScreen, Assembly-CSharp
         m_MethodName: SelectNewResolution
         m_Mode: 1
         m_Arguments:
@@ -5576,8 +5578,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -350, y: -115}
-  m_SizeDelta: {x: 500, y: 50}
+  m_AnchoredPosition: {x: -325, y: -115}
+  m_SizeDelta: {x: 550, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4476629219236112895
 CanvasRenderer:

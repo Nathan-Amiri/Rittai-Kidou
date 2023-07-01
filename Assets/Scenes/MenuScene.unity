@@ -299,17 +299,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26b716c41e9b56b4baafaf13a523ba2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &350094653 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3544808942891220869, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-  m_PrefabInstance: {fileID: 3544808942892403662}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 81b29d57b405b5e4ea3ed813b9b5061e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1170911357
 GameObject:
   m_ObjectHideFlags: 0
@@ -401,14 +390,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 403024230694966304, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -248.14
-      objectReference: {fileID: 0}
-    - target: {fileID: 3544808942891220866, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: _scenePathHash
-      value: 1565888657
-      objectReference: {fileID: 0}
     - target: {fileID: 3544808942891220866, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
       propertyPath: <SceneId>k__BackingField
       value: 6725440572575205843
@@ -508,82 +489,6 @@ PrefabInstance:
     - target: {fileID: 3544808942891220872, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
       propertyPath: m_Name
       value: MenuCanvas
-      objectReference: {fileID: 0}
-    - target: {fileID: 3544808943510291593, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 21300000, guid: f52b305e74cc2d447a743a10f4e0cb26, type: 3}
-    - target: {fileID: 3544808943510291593, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_Color.b
-      value: 0.3962264
-      objectReference: {fileID: 0}
-    - target: {fileID: 3544808943510291593, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_Color.g
-      value: 0.3962264
-      objectReference: {fileID: 0}
-    - target: {fileID: 3544808943510291593, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_Color.r
-      value: 0.3962264
-      objectReference: {fileID: 0}
-    - target: {fileID: 6036592505738403092, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_text
-      value: 'Game Mode: Peaceful'
-      objectReference: {fileID: 0}
-    - target: {fileID: 6036592505738403092, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_HorizontalAlignment
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6317317032319910323, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 350094653}
-    - target: {fileID: 6317317032319910323, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: SelectNewResolution
-      objectReference: {fileID: 0}
-    - target: {fileID: 6317317032319910323, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: MenuScreen, Assembly-CSharp
-      objectReference: {fileID: 0}
-    - target: {fileID: 6832178111992427643, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6832178111992427643, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7337111035803625827, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 550
-      objectReference: {fileID: 0}
-    - target: {fileID: 7337111035803625827, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: -325
-      objectReference: {fileID: 0}
-    - target: {fileID: 7661487830366607861, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_text
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 7661487830366607861, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_fontStyle
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7661487830366607861, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_fontColor.b
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7661487830366607861, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_fontColor.g
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7661487830366607861, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_fontColor.r
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7661487830366607861, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
-      propertyPath: m_fontColor32.rgba
-      value: 4278190335
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 88ea51d97cc7e8b4c8b7f2017e5c4545, type: 3}
@@ -695,4 +600,4 @@ MonoBehaviour:
   isVisible: 1
   isOpen: 1
   connectionProtocol: 4
-  region: 12
+  region: 13

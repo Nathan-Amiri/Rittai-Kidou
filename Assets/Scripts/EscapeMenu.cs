@@ -18,6 +18,8 @@ public class EscapeMenu : NetworkBehaviour
     public Slider volumeSlider;
     public TMP_Text pausedRespawnText;
 
+    private GameManager gameManager;
+
     private float respawnTimeRemaining;
     private bool eliminated;
 
@@ -67,10 +69,7 @@ public class EscapeMenu : NetworkBehaviour
 
     public void SelectLeaveMatch()
     {
-        if (InstanceFinder.IsServer)
-            InstanceFinder.ServerManager.StopConnection(false);
-        else
-            InstanceFinder.ClientManager.StopConnection();
+        FishyRealtime.FishyRealtime.Instance.LeaveRoom();
     }
 
     public void EliminateRespawn(bool eliminate, float respawnTime, float networkDelay) //called by player

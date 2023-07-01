@@ -9,6 +9,9 @@ TagManager:
   - SimpleManager
   - GameManager
   - MenuCanvas
+  - Blue
+  - Green
+  - Red
   layers:
   - Default
   - TransparentFX

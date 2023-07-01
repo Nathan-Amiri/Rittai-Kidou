@@ -12,11 +12,13 @@ public class MenuScreen : MonoBehaviour
     public TMP_InputField usernameField;
     public TextMeshProUGUI usernamePlaceHolder;
     public TMP_Text modeText;
-    public Button startLobby;
     public TMP_InputField roomNameField;
     public TextMeshProUGUI roomNamePlaceholder;
-    public Button joinLobby;
+    public Button quickMatch;
+    public Button createRoom;
+    public Button joinRoom;
     public TMP_Dropdown resolutionDropdown;
+    public TMP_Dropdown regionDropdown;
     public TMP_Text errorText;
 
     //assigned in scene
@@ -57,6 +59,13 @@ public class MenuScreen : MonoBehaviour
 
         if (PlayerPrefs.HasKey("Resolution"))
             resolutionDropdown.value = PlayerPrefs.GetInt("Resolution");
+
+        if (PlayerPrefs.HasKey("Region"))
+        {
+            regionDropdown.value = PlayerPrefs.GetInt("Region");
+            Region newRegion = GetRegion(regionDropdown.value);
+            transport.ConnectToRegion(newRegion);
+        }
     }
 
     private void Update()
@@ -68,6 +77,15 @@ public class MenuScreen : MonoBehaviour
             roomName = roomNameField.text;
             PlayerPrefs.SetString("RoomName", roomName);
         }
+
+        bool interactable = FishyRealtime.FishyRealtime.isConnectedToMaster;
+        quickMatch.interactable = interactable;
+        createRoom.interactable = interactable;
+        joinRoom.interactable = interactable;
+        if (!interactable)
+            errorText.text = "Connecting...";
+        else if (errorText.text == "Connecting...")
+            errorText.text = "";
     }
 
     private void OnClientConnectOrLoad(GameManager gm)
@@ -103,7 +121,16 @@ public class MenuScreen : MonoBehaviour
             return;
         }
 
-
+        if (currentGameMode == "Random")
+            transport.JoinRandomRoom(true);
+        else
+        {
+            RoomFilter filter = new()
+            {
+                gameMode = currentGameMode
+            };
+            transport.JoinRandomRoom(filter, true);
+        }
     }
 
     public void SelectCreatePrivateRoom()
@@ -151,6 +178,8 @@ public class MenuScreen : MonoBehaviour
             errorText.text = "Must provide the name of the private room you'd like to join!";
             return;
         }
+
+        transport.JoinRoom(roomName);
     }
 
     public void SelectChangeMode()
@@ -187,5 +216,21 @@ public class MenuScreen : MonoBehaviour
                 break;
         }
         PlayerPrefs.SetInt("Resolution", resolutionDropdown.value);
+    }
+
+    public void SelectNewRegion()
+    {
+        Region newRegion = GetRegion(regionDropdown.value);
+        transport.ConnectToRegion(newRegion);
+        PlayerPrefs.SetInt("Region", regionDropdown.value);
+    }
+    private Region GetRegion(int regionInt)
+    {
+        if (regionInt == 0)
+            return Region.USAWest;
+        else if (regionInt == 1)
+            return Region.Asia;
+        else
+            return Region.Europe;
     }
 }
