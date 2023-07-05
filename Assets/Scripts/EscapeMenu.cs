@@ -6,6 +6,8 @@ using UnityEngine.UI;
 using System;
 using FishNet.Object;
 using TMPro;
+using Unity.Services.Lobbies;
+using Unity.Services.Authentication;
 
 public class EscapeMenu : NetworkBehaviour
 {
@@ -22,6 +24,15 @@ public class EscapeMenu : NetworkBehaviour
 
     private float respawnTimeRemaining;
     private bool eliminated;
+
+    private void OnEnable()
+    {
+        GameManager.OnClientConnectOrLoad += OnClientConnectOrLoad;
+    }
+    private void OnDisable()
+    {
+        GameManager.OnClientConnectOrLoad -= OnClientConnectOrLoad;
+    }
 
     private void Start()
     {
@@ -67,9 +78,29 @@ public class EscapeMenu : NetworkBehaviour
         RespawnCooldown();
     }
 
-    public void SelectLeaveMatch()
+    private void OnClientConnectOrLoad(GameManager gm)
     {
-        FishyRealtime.FishyRealtime.Instance.LeaveRoom();
+        gameManager = gm;
+    }
+
+    public async void SelectLeaveMatch()
+    {
+        try
+        {
+            if (InstanceFinder.IsServer)
+                await Lobbies.Instance.DeleteLobbyAsync(gameManager.lobby.Id);
+            else
+                await Lobbies.Instance.RemovePlayerAsync(gameManager.lobby.Id, AuthenticationService.Instance.PlayerId);
+
+            if (IsServer)
+                ServerManager.StopConnection(true);
+            else
+                ClientManager.StopConnection();
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e);
+        }
     }
 
     public void EliminateRespawn(bool eliminate, float respawnTime, float networkDelay) //called by player

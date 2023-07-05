@@ -8,6 +8,8 @@ using FishNet.Managing.Scened;
 using FishNet.Transporting;
 using FishNet.Object.Synchronizing;
 using System;
+using Unity.Services.Lobbies.Models;
+
 
 public class GameManager : NetworkBehaviour
 {
@@ -151,13 +153,13 @@ public class GameManager : NetworkBehaviour
     //}
 
     //disconnecting:
-    public void Disconnect()
-    {
-        if (IsServer)
-            ServerManager.StopConnection(false);
-        else
-            ClientManager.StopConnection();
-    }
+    //public void Disconnect()
+    //{
+    //    if (IsServer)
+    //        ServerManager.StopConnection(false);
+    //    else
+    //        ClientManager.StopConnection();
+    //}
     public override void OnSpawnServer(NetworkConnection conn)
     {
         base.OnSpawnServer(conn);
@@ -192,7 +194,12 @@ public class GameManager : NetworkBehaviour
     {
         base.OnStopClient();
         playerNumber = 0;
+
+        //Can't load scene using scenemanager without causing bugs since the game is still connected to master server!
         UnityEngine.SceneManagement.SceneManager.LoadScene(connectionScene);
+        //instead, load the scene using FishNet's SceneManager
+        //SceneLoadData sceneLoadData = new(connectionScene) { ReplaceScenes = ReplaceOption.All };
+        //NetworkManager.SceneManager.LoadGlobalScenes(sceneLoadData);
 
         //if (simpleManager != null)
         //    simpleManager.OnDisconnect();
@@ -223,7 +230,7 @@ public class GameManager : NetworkBehaviour
 
     [NonSerialized] public bool peacefulGameMode; //false = battle game mode
 
-    [NonSerialized] public string roomName;
+    [NonSerialized] public Lobby lobby; //read by EscapeMenu
 
     [SyncObject]
     public readonly SyncList<string> connectedPlayers = new(); //used by ScoreTracker
