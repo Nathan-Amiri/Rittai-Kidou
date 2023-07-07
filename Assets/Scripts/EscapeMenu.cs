@@ -88,9 +88,9 @@ public class EscapeMenu : NetworkBehaviour
         try
         {
             if (InstanceFinder.IsServer)
-                await Lobbies.Instance.DeleteLobbyAsync(gameManager.lobby.Id);
+                await Lobbies.Instance.DeleteLobbyAsync(MenuScreen.currentLobby.Id);
             else
-                await Lobbies.Instance.RemovePlayerAsync(gameManager.lobby.Id, AuthenticationService.Instance.PlayerId);
+                await Lobbies.Instance.RemovePlayerAsync(MenuScreen.currentLobby.Id, AuthenticationService.Instance.PlayerId);
 
             if (IsServer)
                 ServerManager.StopConnection(true);

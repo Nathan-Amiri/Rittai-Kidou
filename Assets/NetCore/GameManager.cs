@@ -8,8 +8,6 @@ using FishNet.Managing.Scened;
 using FishNet.Transporting;
 using FishNet.Object.Synchronizing;
 using System;
-using Unity.Services.Lobbies.Models;
-
 
 public class GameManager : NetworkBehaviour
 {
@@ -229,8 +227,6 @@ public class GameManager : NetworkBehaviour
     private readonly string connectionScene = "MenuScene";
 
     [NonSerialized] public bool peacefulGameMode; //false = battle game mode
-
-    [NonSerialized] public Lobby lobby; //read by EscapeMenu
 
     [SyncObject]
     public readonly SyncList<string> connectedPlayers = new(); //used by ScoreTracker

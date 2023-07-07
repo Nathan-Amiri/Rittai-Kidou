@@ -8,6 +8,14 @@ TagManager:
   - Turret
   - GameManager
   - NetworkManager
+  - MenuCanvas
+  - Blue
+  - Green
+  - Red
+  - SimpleManager
+  - Arena
+  - EnemyPlayerHitbox
+  - PlayerHitbox
   layers:
   - Default
   - TransparentFX

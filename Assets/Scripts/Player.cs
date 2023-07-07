@@ -414,11 +414,17 @@ public class Player : NetworkBehaviour
     }
 
     //collision
-    private void OnCollisionEnter(Collision col)
+    public void Slam(Collider col) //called by Slam
     {
-        if (col.gameObject.CompareTag("Terrain"))
-            playerAudio.PlaySoundEffect("Slam");
+        if (col.CompareTag("Terrain"))
+        {
+            //ensure that player is moving into block and not along it (to prevent players from playing "slam" as they move along a chunk's fragments)
+            float slamAngle = 40; //never change this!!
+            if (Vector3.Angle(rb.velocity.normalized, (col.transform.position - transform.position).normalized) < slamAngle)
+                playerAudio.PlaySoundEffect("Slam");
+        }
     }
+
 
 
 
@@ -515,6 +521,8 @@ public class Player : NetworkBehaviour
                 transform.position = spawnPositions[random];
                 transform.LookAt(new Vector3(0, transform.position.y, 0));
                 mainCamera.transform.SetPositionAndRotation(transform.position, transform.rotation);
+
+                StartCoroutine(playerAudio.EnableSound());
             }
             else
             {

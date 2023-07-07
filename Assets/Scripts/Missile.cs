@@ -50,10 +50,13 @@ public class Missile : MonoBehaviour
 
     private void OnTriggerEnter(Collider col)
     {
+        //players have a main hitbox, and also a second, larger hitbox for missiles shot by enemy players (not turrets)
+        string playerTag = immunePlayer == null ? "PlayerHitbox" : "EnemyPlayerHitbox";
+
         //prioritize enemies over terrain by checking for them first
-        if (col.CompareTag("Player"))
+        if (col.CompareTag(playerTag))
         {
-            Player hitPlayer = col.GetComponent<Player>();
+            Player hitPlayer = col.transform.parent.GetComponent<Player>();
             if (hitPlayer == immunePlayer)
                 return;
 

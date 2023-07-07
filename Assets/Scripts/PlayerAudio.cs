@@ -13,9 +13,19 @@ public class PlayerAudio : MonoBehaviour
     public List<AudioClip> clipList = new();
     public Rigidbody playerRb; //this class reads the velocity but does not affect the rb
 
+    //dynamic:
+    private bool soundEnabled;
+
     private void Start()
     {
+        StartCoroutine(EnableSound());
+    }
+    public IEnumerator EnableSound() //called by Start and Player
+    {
+        soundEnabled = false;
+        yield return new WaitForSeconds(.8f);
         windSource.Play();
+        soundEnabled = true;
     }
 
     private void Update()
@@ -26,6 +36,8 @@ public class PlayerAudio : MonoBehaviour
 
     public void PlaySoundEffect(string soundEffect) //called by Player
     {
+        if (!soundEnabled) return;
+
         switch (soundEffect)
         {
             case "Fire":

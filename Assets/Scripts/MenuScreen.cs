@@ -14,10 +14,11 @@ using Unity.Services.Core;
 using Unity.Services.Authentication;
 using Unity.Services.Lobbies.Models;
 using Unity.Services.Lobbies;
-using Unity.VisualScripting;
 
 public class MenuScreen : MonoBehaviour
 {
+    public static Lobby currentLobby; //static so that escapeMenu can read it in another scene
+
     //assigned in prefab
     public TMP_InputField usernameField;
     public TextMeshProUGUI usernamePlaceHolder;
@@ -31,17 +32,13 @@ public class MenuScreen : MonoBehaviour
     //public TMP_Dropdown regionDropdown;
     public TMP_Text errorText;
 
-    //assigned in scene
-    public NetworkManager networkManager;
-
     //dynamic:
+    private NetworkManager networkManager;
     private string currentGameMode;
     private int gameModeInt;
     private readonly string[] gameModeIndex = new string[3];
 
     private string roomName;
-
-    private Lobby currentLobby;
 
     private void OnEnable()
     {
@@ -50,6 +47,12 @@ public class MenuScreen : MonoBehaviour
     private void OnDisable()
     {
         GameManager.OnClientConnectOrLoad -= OnClientConnectOrLoad;
+    }
+
+    private void Awake()
+    {
+        //find networkmanager using gameobject.find because the networkmanager in the scene gets destroyed when returning to menuscene
+        networkManager = GameObject.FindWithTag("NetworkManager").GetComponent<NetworkManager>();
     }
 
     private void Start()
@@ -102,7 +105,6 @@ public class MenuScreen : MonoBehaviour
 
         await UnityServices.InitializeAsync();
 
-        Debug.Log(AuthenticationService.Instance.IsSignedIn);
         if (AuthenticationService.Instance.IsSignedIn) //true if returning to MenuScene while still connected to relay services
         {
             ToggleButtonsInteractable(true);
@@ -185,7 +187,7 @@ public class MenuScreen : MonoBehaviour
             {
                 IsPrivate = false,
                 Player = GetPlayer(),
-                Data = new Dictionary<string, DataObject> //RoomName = S1, GameMode = S2
+                Data = new Dictionary<string, DataObject> //RoomName = S1, GameMode = S2, JoinCode = S3
                 {
                     //Unlike the technical (and meaningless) lobby name, RoomName is a public data value that is searchable. Rittai Kidou
                     //uses RoomName in place of a Lobby Code
@@ -196,7 +198,6 @@ public class MenuScreen : MonoBehaviour
 
             Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, createLobbyOptions);
 
-            currentLobby = lobby;
             StartCoroutine(HandleLobbyHeartbeat());
 
             if (newRoomName == "")
@@ -204,7 +205,7 @@ public class MenuScreen : MonoBehaviour
             else
                 Debug.Log("Created Private Lobby named " + lobby.Data["RoomName"].Value + ". Game Mode: " + lobby.Data["GameMode"].Value);
 
-            TurnOnClient(true);
+            TurnOnClient(true, lobby);
         }
         catch (LobbyServiceException e)
         {
@@ -225,12 +226,12 @@ public class MenuScreen : MonoBehaviour
             QueryLobbiesOptions queryLobbiesOptions = new()
             {
                 Count = 50,
-                Filters = new List<QueryFilter>() //RoomName = S1, GameMode = S2
+                Filters = new List<QueryFilter>() //RoomName = S1, GameMode = S2, JoinCode = S3
                 {
                     //find lobbies with AvailableSlots greater than 0
                     new QueryFilter(QueryFilter.FieldOptions.AvailableSlots, "0", QueryFilter.OpOptions.GT),
                     //find lobbies with RoomName blank (not private)
-                    new QueryFilter(QueryFilter.FieldOptions.S1, "", QueryFilter.OpOptions.EQ)
+                    new QueryFilter(QueryFilter.FieldOptions.S1, "", QueryFilter.OpOptions.EQ),
                 },
                 Order = new List<QueryOrder>
                 {
@@ -242,7 +243,7 @@ public class MenuScreen : MonoBehaviour
             if (currentGameMode != "Random")
             {
                 //find lobbies with GameMode equal to currentGameMode
-                QueryFilter gameModeFilter = new(QueryFilter.FieldOptions.S2, currentGameMode, QueryFilter.OpOptions.EQ); //RoomName = S1, GameMode = S2
+                QueryFilter gameModeFilter = new(QueryFilter.FieldOptions.S2, currentGameMode, QueryFilter.OpOptions.EQ); //RoomName = S1, GameMode = S2, JoinCode = S3
 
                 queryLobbiesOptions.Filters.Add(gameModeFilter);
             }
@@ -251,11 +252,16 @@ public class MenuScreen : MonoBehaviour
 
             if (queryResponse.Results.Count > 0) //if a lobby is available
             {
-                Lobby lobby = await Lobbies.Instance.JoinLobbyByIdAsync(queryResponse.Results[0].Id);
-                currentLobby = lobby;
-                Debug.Log("Joined Lobby named " + lobby.Data["RoomName"].Value + ". Mode: " + lobby.Data["GameMode"].Value);
+                for (int i = 0; i < queryResponse.Results.Count; i++)
+                {
+                    //find the first lobby that contains a JoinCode (the first lobby that has already connected to the relay)
+                    if (!queryResponse.Results[i].Data.ContainsKey("JoinCode"))
+                        continue;
+                    Lobby lobby = await Lobbies.Instance.JoinLobbyByIdAsync(queryResponse.Results[i].Id);
+                    Debug.Log("Joined Lobby named " + lobby.Data["RoomName"].Value + ". Mode: " + lobby.Data["GameMode"].Value);
 
-                TurnOnClient(false);
+                    TurnOnClient(false, lobby);
+                }
             }
             else
             {
@@ -273,7 +279,7 @@ public class MenuScreen : MonoBehaviour
         }
     }
 
-    public void SelectCreatePrivateRoom()
+    public async void SelectCreatePrivateRoom()
     {
         if (usernamePlaceHolder.enabled)
         {
@@ -290,6 +296,24 @@ public class MenuScreen : MonoBehaviour
             errorText.text = "Must choose a name for your private room!";
             return;
         }
+
+        QueryLobbiesOptions queryLobbiesOptions = new()
+        {
+            Count = 50,
+            Filters = new List<QueryFilter>() //RoomName = S1, GameMode = S2, JoinCode = S3
+            {
+                //find lobbies with RoomName equal to roomName
+                new QueryFilter(QueryFilter.FieldOptions.S1, roomName.ToUpper(), QueryFilter.OpOptions.EQ)
+            }
+        };
+        QueryResponse queryResponse = await Lobbies.Instance.QueryLobbiesAsync(queryLobbiesOptions);
+
+        if (queryResponse.Results.Count != 0)
+        {
+            errorText.text = "A private room with this name is already in use. Please try another name";
+            return;
+        }
+
 
         CreateLobby(roomName.ToUpper(), currentGameMode);
     }
@@ -312,7 +336,7 @@ public class MenuScreen : MonoBehaviour
             QueryLobbiesOptions queryLobbiesOptions = new()
             {
                 Count = 50,
-                Filters = new List<QueryFilter>() //RoomName = S1, GameMode = S2
+                Filters = new List<QueryFilter>() //RoomName = S1, GameMode = S2, JoinCode = S3
                 {
                     //find lobbies with RoomName equal to roomName
                     new QueryFilter(QueryFilter.FieldOptions.S1, roomName.ToUpper(), QueryFilter.OpOptions.EQ)
@@ -330,12 +354,18 @@ public class MenuScreen : MonoBehaviour
                 errorText.text = "Room is already full!";
                 return;
             }
+            if (!queryResponse.Results[0].Data.ContainsKey("JoinCode"))
+            {
+                //JoinCode is created when player is connected to relay. It's possible to join the lobby before the relay connection
+                //is established and before JoinCode is created
+                errorText.text = "Private room is still being created. Please wait a few seconds and try again";
+                return;
+            }
 
             Lobby lobby = await Lobbies.Instance.JoinLobbyByIdAsync(queryResponse.Results[0].Id);
-            currentLobby = lobby;
             Debug.Log("Joined Lobby named " + lobby.Data["RoomName"].Value + ". Mode: " + lobby.Data["GameMode"].Value);
 
-            TurnOnClient(false);
+            TurnOnClient(false, lobby);
         }
         catch (LobbyServiceException e)
         {
@@ -343,18 +373,16 @@ public class MenuScreen : MonoBehaviour
         }
     }
 
-    private async void TurnOnClient(bool host)
+    private async void TurnOnClient(bool host, Lobby lobby)
     {
         errorText.text = "Loading Room...";
         ToggleButtonsInteractable(false);
 
+        var utp = (FishyUnityTransport)networkManager.TransportManager.Transport;
+        string joinCode;
+
         if (host)
         {
-            if (networkManager == null) //true if returning to MenuScene, sincce the NetworkManager isn't destroyed on scene change
-                networkManager = GameObject.FindWithTag("NetworkManager").GetComponent<NetworkManager>();
-
-            var utp = (FishyUnityTransport)networkManager.TransportManager.Transport;
-
             // Setup HostAllocation
             Allocation hostAllocation = await RelayService.Instance.CreateAllocationAsync(4);
             utp.SetRelayServerData(new RelayServerData(hostAllocation, "dtls"));
@@ -363,24 +391,44 @@ public class MenuScreen : MonoBehaviour
             networkManager.ServerManager.StartConnection();
 
             // Setup JoinAllocation
-            string joinCode = await RelayService.Instance.GetJoinCodeAsync(hostAllocation.AllocationId);
+            joinCode = await RelayService.Instance.GetJoinCodeAsync(hostAllocation.AllocationId);
 
-            JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
-            utp.SetRelayServerData(new RelayServerData(joinAllocation, "dtls"));
-
-            // Start Client Connection
-            networkManager.ClientManager.StartConnection();
+            //SaveJoinCodeInLobbyData
+            try
+            {
+                //update currentLobby
+                currentLobby = await Lobbies.Instance.UpdateLobbyAsync(lobby.Id, new UpdateLobbyOptions
+                {
+                    Data = new Dictionary<string, DataObject> //RoomName = S1, GameMode = S2, JoinCode = S3
+                    {
+                        //only updates this piece of data--other lobby data remains unchanged
+                        { "JoinCode", new DataObject(DataObject.VisibilityOptions.Public, joinCode, DataObject.IndexOptions.S3) }
+                    }
+                });
+            }
+            catch (LobbyServiceException e)
+            {
+                Debug.Log(e);
+            }
         }
-        else
+        else //if clientonly
         {
-            Debug.Log("Join");
-            //use joincode
+            currentLobby = lobby;
+
+            //GetJoinCode
+            joinCode = currentLobby.Data["JoinCode"].Value;
         }
+
+        //Setup JoinAllocation
+        JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
+        utp.SetRelayServerData(new RelayServerData(joinAllocation, "dtls"));
+
+        // Start Client Connection
+        networkManager.ClientManager.StartConnection();
     }
     private void SwitchToGameScene(GameManager gm) //called in OnClientConnectOrLoad
     {
         gm.peacefulGameMode = currentLobby.Data["GameMode"].Value == "Peaceful"; //can't use currentGameMode in case it's "Random"
-        gm.lobby = currentLobby;
 
         if (InstanceFinder.IsHost)
             gm.RequestSceneChange("GameScene");
