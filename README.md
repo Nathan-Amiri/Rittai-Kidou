@@ -1,6 +1,6 @@
 Rittai Kidou is my first game ever made, and features online PvP!
 
-Created in Unity and coded in Visual Studio 2022
+Created in Unity and coded in C#
 
 Check out the game's code [here](https://github.com/Nathan-Amiri/Rittai-Kidou/tree/main/Assets/Scripts)
 
