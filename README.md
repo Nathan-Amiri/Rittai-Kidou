@@ -1,4 +1,4 @@
-Rittai Kidou is my first game ever made!
+Rittai Kidou is my first game ever made, and features online PvP!
 
 Created in Unity and coded in Visual Studio 2022
 
