@@ -1,4 +1,4 @@
-Rittai Kidou is my first game ever made, and features online PvP!
+Rittai Kidou is my first game ever made, featuring fast-paced grappling-style movement and an online PvP mode.
 
 Created in Unity and coded in C#
 
